@@ -1,0 +1,23 @@
+# Compiled Python binaries & folders
+*.exe
+*.app/
+dist/
+build/
+*.spec
+
+# Python cache & temp files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# System / IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
