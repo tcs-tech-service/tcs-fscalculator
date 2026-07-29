@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCT Feeds & Speeds Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body data-theme="light">
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="20150804 TCT logo.png" alt="TCT Logo" class="logo">
+                <div class="title-container">
+                    <h1>TCT Feeds & Speeds Calculator</h1>
+                    <p>Engineering Calculations | Multi-Units | Spindle Capping Safeguards</p>
+                </div>
+            </div>
+            <button id="theme-toggle" class="btn-theme" tabindex="-1">🌙 Dark Mode</button>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="panels">
+            <!-- Forward Panel -->
+            <section class="card panel" id="fwd-panel">
+                <h2>Forward: Machine Inputs ➔ Tool Engagement</h2>
+                
+                <div class="input-group">
+                    <label for="fwd-dia">Tool Diameter:</label>
+                    <input type="text" id="fwd-dia" class="combo" list="fwd-dia-list" tabindex="1">
+                    <datalist id="fwd-dia-list"></datalist>
+                    <select id="fwd-dia-unit" class="unit-toggle" tabindex="-1">
+                        <option value="in">in</option>
+                        <option value="mm">mm</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="fwd-fr">Feed Rate:</label>
+                    <input type="number" id="fwd-fr" value="48.0" step="any" tabindex="2">
+                    <select id="fwd-fr-unit" class="unit-toggle" tabindex="-1">
+                        <option value="IPM">IPM</option>
+                        <option value="m/min">m/min</option>
+                        <option value="mm/sec">mm/sec</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="fwd-krpm">Spindle Speed:</label>
+                    <input type="number" id="fwd-krpm" value="78.0" step="any" tabindex="3">
+                    <span class="unit-label">krpm</span>
+                </div>
+
+                <div class="input-group" style="display: none;">
+                    <label for="fwd-flutes">Flutes (Z):</label>
+                    <input type="number" id="fwd-flutes" value="1" step="1" min="1" tabindex="-1">
+                    <span class="unit-label">flutes</span>
+                </div>
+
+                <div class="actions">
+                    <button id="btn-fwd-calc" class="btn primary" tabindex="-1">Calculate</button>
+                    <button id="btn-fwd-copy" class="btn" tabindex="-1">Copy Results</button>
+                    <button id="btn-fwd-export" class="btn" tabindex="-1">Export CSV</button>
+                    <button id="btn-fwd-reset" class="btn" tabindex="-1">Reset</button>
+                </div>
+
+                <table class="results-table" id="table-fwd">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Imperial</th>
+                            <th>Metric</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Reverse Panel -->
+            <section class="card panel" id="rev-panel">
+                <h2>Reverse: Tool Engagement ➔ Machine Inputs</h2>
+                
+
+
+                <div class="input-group">
+                    <label for="rev-dia">Tool Diameter:</label>
+                    <input type="text" id="rev-dia" class="combo" list="rev-dia-list" tabindex="-1">
+                    <datalist id="rev-dia-list"></datalist>
+                    <select id="rev-dia-unit" class="unit-toggle" tabindex="-1">
+                        <option value="in">in</option>
+                        <option value="mm">mm</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="rev-vc">Cutting Speed:</label>
+                    <input type="number" id="rev-vc" value="200.0" step="any" tabindex="4">
+                    <select id="rev-vc-unit" class="unit-toggle" tabindex="-1">
+                        <option value="SFM">SFM</option>
+                        <option value="m/min">m/min</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="rev-fz">Chipload (fz):</label>
+                    <input type="number" id="rev-fz" value="2.5" step="any" tabindex="5">
+                    <select id="rev-fz-unit" class="unit-toggle" tabindex="-1">
+                        <option value="0.001&quot; per revoluation">0.001" per revoluation</option>
+                        <option value="micron per revoluation">micron per revoluation</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="display: none;">
+                    <label for="rev-flutes">Flutes (Z):</label>
+                    <input type="number" id="rev-flutes" value="1" step="1" min="1" tabindex="-1">
+                    <span class="unit-label">flutes</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="rev-max-rpm">Max Spindle Speed:</label>
+                    <input type="number" id="rev-max-rpm" value="200.0" step="any" tabindex="-1">
+                    <span class="unit-label">krpm (0=None)</span>
+                </div>
+
+                <div class="actions">
+                    <button id="btn-rev-calc" class="btn primary" tabindex="-1">Calculate</button>
+                    <button id="btn-rev-copy" class="btn" tabindex="-1">Copy Results</button>
+                    <button id="btn-rev-export" class="btn" tabindex="-1">Export CSV</button>
+                    <button id="btn-rev-reset" class="btn" tabindex="-1">Reset</button>
+                </div>
+
+                <div id="lbl-rev-cap-warn" class="warning-text"></div>
+
+                <table class="results-table" id="table-rev">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Imperial</th>
+                            <th>Metric</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <footer class="status-bar">
+        <span id="status-text">Ready | Enter parameters to calculate Speeds & Feeds.</span>
+    </footer>
+    
+    <script src="sizes.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

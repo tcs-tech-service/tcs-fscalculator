@@ -43,16 +43,9 @@ class MachiningMathEngine:
         }
 
     @staticmethod
-    def calc_reverse(dia_in: float, sfm: float, ipt: float, flutes: int, max_rpm: float = 0.0) -> Dict[str, Any]:
-        """Calculates RPM, IPM, and MRR from cutting speed and chipload, with optional spindle capping."""
-        rpm_theoretical = (sfm * 12.0) / (math.pi * dia_in) if dia_in > 0 else 0.0
-        
-        capped = False
-        rpm = rpm_theoretical
-        if max_rpm > 0.0 and rpm > max_rpm:
-            rpm = max_rpm
-            capped = True
-            
+    def calc_reverse(dia_in: float, sfm: float, ipt: float, flutes: int) -> Dict[str, float]:
+        """Calculates RPM, IPM, and MRR from cutting speed and chipload."""
+        rpm = (sfm * 12.0) / (math.pi * dia_in) if dia_in > 0 else 0.0
         ipm = rpm * ipt * flutes
         
         area_in = (math.pi * (dia_in ** 2)) / 4.0
@@ -63,22 +56,18 @@ class MachiningMathEngine:
         area_mm = (math.pi * (dia_mm ** 2)) / 4.0
         mrr_met = (area_mm * ipm_mm) / 1000.0 # cm^3/min
         
-        sfm_achieved = (math.pi * dia_in * rpm) / 12.0
-        
         return {
             "rpm": rpm,
-            "rpm_original": rpm_theoretical,
             "krpm": rpm / 1000.0,
             "ipm": ipm,
             "mrr_imp": mrr_imp,
-            "mrr_met": mrr_met,
-            "capped": capped,
-            "sfm_achieved": sfm_achieved
+            "mrr_met": mrr_met
         }
 
 
 # --- Main GUI Application ---
 class MachiningCalculatorApp:
+    # Preset Material Speeds (SFM) and starting Chiploads (IPT for 1/4" tool)
     MATERIAL_PRESETS: Dict[str, Dict[str, float]] = {
         "Custom / Manual Entry": {"sfm": 200.0, "ipt": 0.0005},
         "FR4": {"sfm": 400.0, "ipt": 0.0005},
@@ -89,23 +78,15 @@ class MachiningCalculatorApp:
 
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("TCT Speeds, Feeds & Drilling Parameter Portal")
-        self.root.geometry("1160x860")
-        self.root.minsize(1080, 780)
+        self.root.title("TCT Drilling Parameters")
+        self.root.geometry("1160x720")
+        self.root.minsize(1080, 640)
+        self.root.configure(padx=15, pady=15)
 
-        # Set window icon if available
-        self.script_dir = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
-        icon_path = os.path.join(self.script_dir, "app_icon.png")
-        try:
-            if os.path.exists(icon_path):
-                self.app_icon = tk.PhotoImage(file=icon_path)
-                self.root.iconphoto(False, self.app_icon)
-        except Exception:
-            pass
+        self.root.columnconfigure(0, weight=1, uniform="panel")
+        self.root.columnconfigure(1, weight=1, uniform="panel")
+        self.root.rowconfigure(1, weight=1)
 
-        # Set default custom font and base styling
-        self.current_theme = "light" # default theme
-        
         # Comprehensive Imperial Drill List (Decimal + Wire Gage/Fraction/Metric Equivalent)
         self.imperial_sizes = [
             "0.0039 (0.10MM)",
@@ -384,148 +365,59 @@ class MachiningCalculatorApp:
         ]
 
         # --- Variables ---
-        self.var_status = tk.StringVar(value="Initializing Portal...")
+        self.var_status = tk.StringVar(value="Ready | Waiting for input...")
         
-        # Forward Calculator Variables
+        # Forward Vars
         self.var_fwd_dia = tk.StringVar(value="0.0098 (0.25MM)")
         self.var_fwd_fr = tk.StringVar(value="48.0")
         self.var_fwd_krpm = tk.StringVar(value="78.0")
         self.var_fwd_flutes = tk.StringVar(value="1")
 
-        # Reverse Calculator Variables
+        # Reverse Vars
         self.var_rev_mat = tk.StringVar(value="Custom / Manual Entry")
         self.var_rev_dia = tk.StringVar(value="0.0098 (0.25MM)")
         self.var_rev_vc = tk.StringVar(value="200.0")
         self.var_rev_fz = tk.StringVar(value="0.0005")
         self.var_rev_flutes = tk.StringVar(value="1")
-        self.var_rev_max_rpm = tk.StringVar(value="200.0")
 
-        # Paths
-        self.logo_path = os.path.join(self.script_dir, "20150804 TCT logo.png")
-
-        # Build UI structure
-        self._setup_layout()
+        self._setup_styles()
+        self._build_header()
+        self._build_left_panel()
+        self._build_right_panel()
+        self._build_status_bar()
         self._setup_bindings()
         
-        # Apply initial theme colors
-        self.apply_theme(self.current_theme)
-
-        # Trigger Calculations
         self.calculate_all(silent=True)
-        self.var_status.set("Ready | Enter parameters to calculate Speeds & Feeds.")
 
-    def _setup_layout(self):
-        # 1. Main Header Container
-        self.header_container = ttk.Frame(self.root)
-        self.header_container.pack(side="top", fill="x", padx=15, pady=(10, 5))
-        self._build_header()
-
-        # 2. Main Calculator Container
-        self.main_calc_frame = ttk.Frame(self.root)
-        self.main_calc_frame.pack(fill="both", expand=True, padx=15, pady=5)
-        
-        self.main_calc_frame.columnconfigure(0, weight=1, uniform="panel")
-        self.main_calc_frame.columnconfigure(1, weight=1, uniform="panel")
-        self.main_calc_frame.rowconfigure(0, weight=1)
-
-        self._build_calculator_panels()
-
-        # 3. Status Bar
-        self._build_status_bar()
+    def _setup_styles(self):
+        style = ttk.Style()
+        style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"))
+        style.configure("Subtitle.TLabel", font=("Segoe UI", 9, "italic"), foreground="#666666")
+        style.configure("Panel.TLabelframe.Label", font=("Segoe UI", 11, "bold"), foreground="#004080")
+        style.configure("Status.TLabel", font=("Segoe UI", 9), foreground="#333333")
+        style.configure("Action.TButton", font=("Segoe UI", 9, "bold"))
 
     def _build_header(self):
-        # Header Layout: Left space for aesthetics, Center for Title/Logo, Right for Theme Toggle
-        header_grid = ttk.Frame(self.header_container)
-        header_grid.pack(fill="x", expand=True)
-        header_grid.columnconfigure(0, weight=1)
-        header_grid.columnconfigure(1, weight=3) # Center Title
-        header_grid.columnconfigure(2, weight=1) # Right Align
+        header_frame = ttk.Frame(self.root)
+        header_frame.grid(row=0, column=0, columnspan=2, pady=(0, 10), sticky="ew")
 
-        # Center Frame for logo & text
-        center_frame = ttk.Frame(header_grid)
-        center_frame.grid(row=0, column=1)
+        script_dir = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(script_dir, "20150804 TCT logo.png")
 
         try:
-            if os.path.exists(self.logo_path):
-                self.raw_logo = tk.PhotoImage(file=self.logo_path)
+            if os.path.exists(logo_path):
+                self.raw_logo = tk.PhotoImage(file=logo_path)
                 self.logo_img = self.raw_logo.subsample(2, 2)
-                logo_lbl = ttk.Label(center_frame, image=self.logo_img)
-                logo_lbl.pack(side="top", anchor="center", pady=(0, 4))
+                ttk.Label(header_frame, image=self.logo_img).pack(side="top", anchor="center", pady=(0, 4))
         except Exception:
             pass 
 
-        ttk.Label(center_frame, text="TCT Machining Speeds & Feeds Calculator", font=("Segoe UI", 16, "bold")).pack(side="top", anchor="center")
-        ttk.Label(center_frame, text="Engineering Calculations | Multi-Units | Spindle Capping Safeguards", font=("Segoe UI", 9, "italic")).pack(side="top", anchor="center")
-
-        # Theme Selector (Placed Top Right)
-        theme_btn_frame = ttk.Frame(header_grid)
-        theme_btn_frame.grid(row=0, column=2, sticky="ne")
-        self.btn_theme_toggle = ttk.Button(theme_btn_frame, text="🌙 Dark Mode", width=16, command=self.toggle_theme)
-        self.btn_theme_toggle.pack(anchor="ne", pady=10)
-
-    def _build_calculator_panels(self):
-        # Left Panel (Forward Calculator)
-        fwd_frame = ttk.LabelFrame(self.main_calc_frame, text=" Forward: Machine Inputs ➔ Tool Engagement ", style="Card.TLabelframe", padding=15)
-        fwd_frame.grid(row=0, column=0, padx=(0, 8), pady=10, sticky="nsew")
-        fwd_frame.columnconfigure(1, weight=1)
-
-        self.combo_fwd_dia, self.combo_fwd_dia_unit = self._add_input_row(fwd_frame, 0, "Tool Diameter:", self.var_fwd_dia, ["in", "mm"], True, self.imperial_sizes)
-        self.entry_fwd_fr, self.combo_fwd_fr_unit = self._add_input_row(fwd_frame, 1, "Feed Rate:", self.var_fwd_fr, ["IPM", "m/min", "mm/sec"])
-        self.entry_fwd_krpm, _ = self._add_input_row(fwd_frame, 2, "Spindle Speed:", self.var_fwd_krpm, ["krpm"])
-        self.entry_fwd_flutes, _ = self._add_input_row(fwd_frame, 3, "Flutes (Z):", self.var_fwd_flutes, ["flutes"])
-
-        # Control Buttons
-        btn_frame_fwd = ttk.Frame(fwd_frame)
-        btn_frame_fwd.grid(row=4, column=0, columnspan=3, pady=12)
-        ttk.Button(btn_frame_fwd, text="Calculate", command=lambda: self.calculate_forward(False)).pack(side="left", padx=4)
-        ttk.Button(btn_frame_fwd, text="Copy Results", command=lambda: self.copy_to_clipboard(self.table_fwd)).pack(side="left", padx=4)
-        ttk.Button(btn_frame_fwd, text="Export CSV", command=lambda: self.export_to_csv(self.table_fwd, "Forward_Calc")).pack(side="left", padx=4)
-        ttk.Button(btn_frame_fwd, text="Reset", command=lambda: self.reset_panel('fwd')).pack(side="left", padx=4)
-
-        self.table_fwd = self._create_treeview(fwd_frame)
-        self.table_fwd.grid(row=5, column=0, columnspan=3, sticky="nsew", pady=(5, 0))
-        fwd_frame.rowconfigure(5, weight=1)
-
-        # Right Panel (Reverse Calculator)
-        rev_frame = ttk.LabelFrame(self.main_calc_frame, text=" Reverse: Tool Engagement ➔ Machine Inputs ", style="Card.TLabelframe", padding=15)
-        rev_frame.grid(row=0, column=1, padx=(8, 0), pady=10, sticky="nsew")
-        rev_frame.columnconfigure(1, weight=1)
-
-        # Material Preset Selector
-        ttk.Label(rev_frame, text="Material Preset:").grid(row=0, column=0, sticky="w", pady=5)
-        self.combo_rev_mat = ttk.Combobox(rev_frame, textvariable=self.var_rev_mat, values=list(self.MATERIAL_PRESETS.keys()), state="readonly")
-        self.combo_rev_mat.grid(row=0, column=1, columnspan=2, padx=5, sticky="ew")
-
-        self.combo_rev_dia, self.combo_rev_dia_unit = self._add_input_row(rev_frame, 1, "Tool Diameter:", self.var_rev_dia, ["in", "mm"], True, self.imperial_sizes)
-        self.entry_rev_vc, self.combo_rev_vc_unit = self._add_input_row(rev_frame, 2, "Cutting Speed:", self.var_rev_vc, ["SFM", "m/min"])
-        self.entry_rev_fz, self.combo_rev_fz_unit = self._add_input_row(rev_frame, 3, "Chipload (fz):", self.var_rev_fz, ["IPT", "mm/t"])
-        self.entry_rev_flutes, _ = self._add_input_row(rev_frame, 4, "Flutes (Z):", self.var_rev_flutes, ["flutes"])
-        self.entry_rev_max_rpm, _ = self._add_input_row(rev_frame, 5, "Max Spindle Speed:", self.var_rev_max_rpm, ["krpm (0=None)"])
-
-        # Control Buttons
-        btn_frame_rev = ttk.Frame(rev_frame)
-        btn_frame_rev.grid(row=6, column=0, columnspan=3, pady=12)
-        ttk.Button(btn_frame_rev, text="Calculate", command=lambda: self.calculate_reverse(False)).pack(side="left", padx=4)
-        ttk.Button(btn_frame_rev, text="Copy Results", command=lambda: self.copy_to_clipboard(self.table_rev)).pack(side="left", padx=4)
-        ttk.Button(btn_frame_rev, text="Export CSV", command=lambda: self.export_to_csv(self.table_rev, "Reverse_Calc")).pack(side="left", padx=4)
-        ttk.Button(btn_frame_rev, text="Reset", command=lambda: self.reset_panel('rev')).pack(side="left", padx=4)
-
-        # Capped RPM warning label
-        self.lbl_rev_cap_warn = ttk.Label(rev_frame, text="", foreground="#f38ba8", font=("Segoe UI", 9, "bold"))
-        self.lbl_rev_cap_warn.grid(row=7, column=0, columnspan=3, sticky="w", pady=2)
-
-        self.table_rev = self._create_treeview(rev_frame)
-        self.table_rev.grid(row=8, column=0, columnspan=3, sticky="nsew", pady=(5, 0))
-        rev_frame.rowconfigure(8, weight=1)
-
-    def _build_status_bar(self):
-        status_frame = ttk.Frame(self.root, relief="sunken", padding=(8, 3))
-        status_frame.pack(side="bottom", fill="x", padx=15, pady=(5, 10))
-        ttk.Label(status_frame, textvariable=self.var_status, style="Status.TLabel").pack(side="left")
+        ttk.Label(header_frame, text="Feeds & Speeds Calculator", style="Title.TLabel").pack(side="top", anchor="center")
+        ttk.Label(header_frame, text="Real-time bi-directional conversion, material removal rates (MRR), and CAD/CAM export", style="Subtitle.TLabel").pack(side="top", anchor="center")
 
     def _add_input_row(self, parent: ttk.Frame, row: int, label: str, var: tk.StringVar, 
-                       units: List[str], is_combo: bool = False, combo_values: Optional[List[str]] = None) -> Tuple[ttk.Widget, Optional[ttk.Combobox]]:
-        """Helper to cleanly construct standardized UI input rows with direct widget handles."""
+                       units: List[str], is_combo: bool = False, combo_values: Optional[List[str]] = None) -> ttk.Combobox:
+        """Helper to cleanly construct standardized UI input rows without boilerplate."""
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=5)
         
         if is_combo:
@@ -535,33 +427,85 @@ class MachiningCalculatorApp:
             
         widget.grid(row=row, column=1, padx=5, sticky="ew")
         
-        unit_combo = None
         if len(units) > 1:
-            unit_combo = ttk.Combobox(parent, values=units, state="readonly", width=12)
+            unit_combo = ttk.Combobox(parent, values=units, state="readonly", width=8)
             unit_combo.current(0)
             unit_combo.grid(row=row, column=2, sticky="w")
+            return unit_combo
         else:
             ttk.Label(parent, text=units[0]).grid(row=row, column=2, sticky="w", padx=2)
-            
-        return widget, unit_combo
+            return None
+
+    def _build_left_panel(self):
+        frame = ttk.LabelFrame(self.root, text=" Forward: Machine Inputs ➔ Tool Engagement ", style="Panel.TLabelframe", padding=15)
+        frame.grid(row=1, column=0, padx=(0, 8), sticky="nsew")
+        frame.columnconfigure(1, weight=1)
+
+        self.combo_fwd_dia_unit = self._add_input_row(frame, 0, "Tool Diameter:", self.var_fwd_dia, ["in", "mm"], True, self.imperial_sizes)
+        self.combo_fwd_fr_unit = self._add_input_row(frame, 1, "Feed Rate:", self.var_fwd_fr, ["IPM", "m/min", "mm/sec"])
+        self._add_input_row(frame, 2, "Spindle Speed:", self.var_fwd_krpm, ["krpm"])
+        self._add_input_row(frame, 3, "Flutes (Z):", self.var_fwd_flutes, ["flutes"])
+
+        # Control Buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.grid(row=4, column=0, columnspan=3, pady=12)
+        ttk.Button(btn_frame, text="Calculate", style="Action.TButton", command=lambda: self.calculate_forward(False)).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Copy Results", command=lambda: self.copy_to_clipboard(self.table_fwd)).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Export CSV", command=lambda: self.export_to_csv(self.table_fwd, "Forward_Calc")).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Reset", command=lambda: self.reset_panel('fwd')).pack(side="left", padx=4)
+
+        self.table_fwd = self._create_treeview(frame)
+        self.table_fwd.grid(row=5, column=0, columnspan=3, sticky="nsew", pady=(5, 0))
+        frame.rowconfigure(5, weight=1)
+
+    def _build_right_panel(self):
+        frame = ttk.LabelFrame(self.root, text=" Reverse: Tool Engagement ➔ Machine Inputs ", style="Panel.TLabelframe", padding=15)
+        frame.grid(row=1, column=1, padx=(8, 0), sticky="nsew")
+        frame.columnconfigure(1, weight=1)
+
+        # Material Preset Selector
+        ttk.Label(frame, text="Material Preset:").grid(row=0, column=0, sticky="w", pady=5)
+        self.combo_rev_mat = ttk.Combobox(frame, textvariable=self.var_rev_mat, values=list(self.MATERIAL_PRESETS.keys()), state="readonly")
+        self.combo_rev_mat.grid(row=0, column=1, columnspan=2, padx=5, sticky="ew")
+
+        self.combo_rev_dia_unit = self._add_input_row(frame, 1, "Tool Diameter:", self.var_rev_dia, ["in", "mm"], True, self.imperial_sizes)
+        self.combo_rev_vc_unit = self._add_input_row(frame, 2, "Cutting Speed:", self.var_rev_vc, ["SFM", "m/min"])
+        self.combo_rev_fz_unit = self._add_input_row(frame, 3, "Chipload (fz):", self.var_rev_fz, ["IPT", "mm/t"])
+        self._add_input_row(frame, 4, "Flutes (Z):", self.var_rev_flutes, ["flutes"])
+
+        # Control Buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.grid(row=5, column=0, columnspan=3, pady=12)
+        ttk.Button(btn_frame, text="Calculate", style="Action.TButton", command=lambda: self.calculate_reverse(False)).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Copy Results", command=lambda: self.copy_to_clipboard(self.table_rev)).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Export CSV", command=lambda: self.export_to_csv(self.table_rev, "Reverse_Calc")).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Reset", command=lambda: self.reset_panel('rev')).pack(side="left", padx=4)
+
+        self.table_rev = self._create_treeview(frame)
+        self.table_rev.grid(row=6, column=0, columnspan=3, sticky="nsew", pady=(5, 0))
+        frame.rowconfigure(6, weight=1)
+
+    def _build_status_bar(self):
+        status_frame = ttk.Frame(self.root, relief="sunken", padding=(8, 3))
+        status_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10, 0))
+        ttk.Label(status_frame, textvariable=self.var_status, style="Status.TLabel").pack(side="left")
 
     def _create_treeview(self, parent: ttk.Frame) -> ttk.Treeview:
         columns = ("Parameter", "Imperial", "Metric")
-        tv = ttk.Treeview(parent, columns=columns, show="headings", height=8)
+        tv = ttk.Treeview(parent, columns=columns, show="headings", height=7)
         tv.heading("Parameter", text="Parameter")
         tv.heading("Imperial", text="Imperial")
         tv.heading("Metric", text="Metric")
         tv.column("Parameter", width=120, anchor="w", stretch=True)
-        tv.column("Imperial", width=125, anchor="center", stretch=True)
+        tv.column("Imperial", width=110, anchor="center", stretch=True)
         tv.column("Metric", width=160, anchor="center", stretch=True)
         return tv
 
     def _setup_bindings(self):
-        # Traces for Live Calculations
         for var in (self.var_fwd_dia, self.var_fwd_fr, self.var_fwd_krpm, self.var_fwd_flutes):
             var.trace_add("write", lambda *a: self.calculate_forward(silent=True))
         
-        for var in (self.var_rev_dia, self.var_rev_vc, self.var_rev_fz, self.var_rev_flutes, self.var_rev_max_rpm):
+        for var in (self.var_rev_dia, self.var_rev_vc, self.var_rev_fz, self.var_rev_flutes):
             var.trace_add("write", lambda *a: self.calculate_reverse(silent=True))
 
         self.combo_fwd_dia_unit.bind("<<ComboboxSelected>>", lambda e: self._on_unit_toggle('fwd'))
@@ -580,6 +524,7 @@ class MachiningCalculatorApp:
         mat = self.var_rev_mat.get()
         if mat in self.MATERIAL_PRESETS and mat != "Custom / Manual Entry":
             preset = self.MATERIAL_PRESETS[mat]
+            # Convert SFM/IPT to currently selected units if necessary
             sfm_val = preset["sfm"]
             ipt_val = preset["ipt"]
             
@@ -590,16 +535,16 @@ class MachiningCalculatorApp:
                 
             self.var_rev_vc.set(f"{sfm_val:.1f}")
             self.var_rev_fz.set(f"{ipt_val:.4f}")
-            self.var_status.set(f"Loaded material speed preset: {mat}")
+            self.var_status.set(f"Loaded preset: {mat}")
 
     def _on_unit_toggle(self, panel: str):
         if panel == 'fwd':
             unit = self.combo_fwd_dia_unit.get()
-            self.combo_fwd_dia['values'] = self.metric_sizes if unit == "mm" else self.imperial_sizes
+            self.root.nametowidget(self.combo_fwd_dia_unit.master.children['!combobox'])['values'] = self.metric_sizes if unit == "mm" else self.imperial_sizes
             self.calculate_forward(silent=True)
         else:
             unit = self.combo_rev_dia_unit.get()
-            self.combo_rev_dia['values'] = self.metric_sizes if unit == "mm" else self.imperial_sizes
+            self.root.nametowidget(self.combo_rev_dia_unit.master.children['!combobox2'])['values'] = self.metric_sizes if unit == "mm" else self.imperial_sizes
             self.calculate_reverse(silent=True)
 
     def reset_panel(self, panel: str):
@@ -616,12 +561,10 @@ class MachiningCalculatorApp:
             self.var_rev_vc.set("200.0")
             self.var_rev_fz.set("0.0025")
             self.var_rev_flutes.set("2")
-            self.var_rev_max_rpm.set("200.0")
             self.combo_rev_dia_unit.current(0)
             self.combo_rev_vc_unit.current(0)
             self.combo_rev_fz_unit.current(0)
-            self.lbl_rev_cap_warn.configure(text="")
-        self.var_status.set(f"Reset {'Forward' if panel=='fwd' else 'Reverse'} calculator variables to defaults.")
+        self.var_status.set(f"Reset {'Forward' if panel=='fwd' else 'Reverse'} panel to default parameters.")
 
     def calculate_all(self, silent: bool = False):
         self.calculate_forward(silent)
@@ -653,10 +596,10 @@ class MachiningCalculatorApp:
             self.table_fwd.insert("", "end", values=("Spindle Speed", f"{krpm:.2f} krpm", f"{krpm:.2f} krpm"))
             self.table_fwd.insert("", "end", values=("---", "---", "---"))
             self.table_fwd.insert("", "end", values=("Cutting Speed", f"{res['sfm']:.2f} SFM", f"{res['sfm']*0.3048:.2f} m/min"))
-            self.table_fwd.insert("", "end", values=("Chipload (fz)", f"{res['ipt']:.5f} IPT", f"{res['ipt']*25.4:.4f} mm/t"))
+            self.table_fwd.insert("", "end", values=("Chipload", f"{res['ipt']:.5f} IPT", f"{res['ipt']*25.4:.4f} mm/t"))
             self.table_fwd.insert("", "end", values=("Drilling MRR", f"{res['mrr_imp']:.3f} in³/min", f"{res['mrr_met']:.2f} cm³/min"))
             
-            if not silent: self.var_status.set("Forward speeds and feeds calculated successfully.")
+            if not silent: self.var_status.set("Forward calculation updated successfully.")
 
         except (ValueError, IndexError, ZeroDivisionError):
             if not silent: messagebox.showerror("Input Error", "Please ensure all forward parameters contain valid positive numbers.")
@@ -669,11 +612,8 @@ class MachiningCalculatorApp:
             raw_vc = float(self.var_rev_vc.get())
             raw_fz = float(self.var_rev_fz.get())
             flutes = int(self.var_rev_flutes.get())
-            
-            raw_max_rpm = self.var_rev_max_rpm.get().strip()
-            max_rpm = float(raw_max_rpm) * 1000.0 if raw_max_rpm else 0.0
 
-            if raw_dia <= 0 or raw_vc <= 0 or raw_fz <= 0 or flutes <= 0 or max_rpm < 0:
+            if raw_dia <= 0 or raw_vc <= 0 or raw_fz <= 0 or flutes <= 0:
                 raise ValueError
 
             # Normalize to base Imperial units (Inches, SFM, IPT)
@@ -681,41 +621,24 @@ class MachiningCalculatorApp:
             base_sfm = raw_vc / 0.3048 if self.combo_rev_vc_unit.get() == "m/min" else raw_vc
             base_ipt = raw_fz / 25.4 if self.combo_rev_fz_unit.get() == "mm/t" else raw_fz
 
-            res = MachiningMathEngine.calc_reverse(base_dia_in, base_sfm, base_ipt, flutes, max_rpm)
-
-            # Update Capping warning display
-            if res['capped']:
-                self.lbl_rev_cap_warn.configure(text=f"⚠️ Spindle Capped at {raw_max_rpm} krpm! Feed Rate scaled to keep IPT chipload.")
-            else:
-                self.lbl_rev_cap_warn.configure(text="")
+            res = MachiningMathEngine.calc_reverse(base_dia_in, base_sfm, base_ipt, flutes)
 
             for item in self.table_rev.get_children(): self.table_rev.delete(item)
             self.table_rev.insert("", "end", values=("Tool Diameter", f"{base_dia_in:.4f} in", f"{base_dia_in*25.4:.4f} mm"))
-            
-            sfm_label = f"{base_sfm:.2f} SFM"
-            if res['capped']:
-                sfm_label += f" ({res['sfm_achieved']:.1f} achieved)"
-            self.table_rev.insert("", "end", values=("Cutting Speed", sfm_label, f"{base_sfm*0.3048:.2f} m/min"))
-            
-            self.table_rev.insert("", "end", values=("Chipload (fz)", f"{base_ipt:.5f} IPT", f"{base_ipt*25.4:.4f} mm/t"))
+            self.table_rev.insert("", "end", values=("Cutting Speed", f"{base_sfm:.2f} SFM", f"{base_sfm*0.3048:.2f} m/min"))
+            self.table_rev.insert("", "end", values=("Chipload", f"{base_ipt:.5f} IPT", f"{base_ipt*25.4:.4f} mm/t"))
             self.table_rev.insert("", "end", values=("---", "---", "---"))
-            
-            rpm_label = f"{res['krpm']:.2f} krpm ({int(res['rpm'])} RPM)"
-            if res['capped']:
-                rpm_label += " [CAPPED]"
-            self.table_rev.insert("", "end", values=("Spindle Speed", rpm_label, f"{res['krpm']:.2f} krpm"))
+            self.table_rev.insert("", "end", values=("Spindle Speed", f"{res['krpm']:.2f} krpm ({int(res['rpm'])} RPM)", f"{res['krpm']:.2f} krpm"))
             self.table_rev.insert("", "end", values=("Feed Rate", f"{res['ipm']:.1f} IPM", f"{res['ipm']*0.0254:.3f} m/min | {res['ipm']*0.4233:.2f} mm/s"))
             self.table_rev.insert("", "end", values=("Drilling MRR", f"{res['mrr_imp']:.3f} in³/min", f"{res['mrr_met']:.2f} cm³/min"))
 
-            if not silent: self.var_status.set("Reverse speeds and feeds calculated successfully.")
+            if not silent: self.var_status.set("Reverse calculation updated successfully.")
 
         except (ValueError, IndexError, ZeroDivisionError):
             if not silent: messagebox.showerror("Input Error", "Please ensure all reverse parameters contain valid positive numbers.")
             self.var_status.set("Error: Invalid reverse input parameter.")
-            self.lbl_rev_cap_warn.configure(text="")
             for item in self.table_rev.get_children(): self.table_rev.delete(item)
 
-    # --- Clipboard & CSV Outputs ---
     def copy_to_clipboard(self, target_table: ttk.Treeview):
         """Copies formatted table outputs directly to OS clipboard for CAD/CAM pasting."""
         children = target_table.get_children()
@@ -763,84 +686,6 @@ class MachiningCalculatorApp:
         except Exception as e:
             self.var_status.set("Error saving CSV file.")
             messagebox.showerror("Export Error", f"Failed to save file:\n{e}")
-
-    # --- Theme Styling system ---
-    def toggle_theme(self):
-        if self.current_theme == "dark":
-            self.current_theme = "light"
-            self.btn_theme_toggle.configure(text="🌙 Dark Mode")
-        else:
-            self.current_theme = "dark"
-            self.btn_theme_toggle.configure(text="☀️ Light Mode")
-        self.apply_theme(self.current_theme)
-
-    def apply_theme(self, theme_name: str):
-        style = ttk.Style()
-        style.theme_use('clam')
-
-        if theme_name == "dark":
-            bg = "#1e1e2e"
-            card_bg = "#252538"
-            fg = "#cdd6f4"
-            accent = "#89b4fa"
-            accent_bg = "#313244"
-            border_col = "#45475a"
-            select_bg = "#45475a"
-            select_fg = "#ffffff"
-            field_bg = "#252538"
-        else:
-            bg = "#f4f5f7"
-            card_bg = "#ffffff"
-            fg = "#2d3748"
-            accent = "#4f46e5"
-            accent_bg = "#e2e8f0"
-            border_col = "#cbd5e1"
-            select_bg = "#cbd5e1"
-            select_fg = "#000000"
-            field_bg = "#ffffff"
-
-        # Apply styles dynamically
-        style.configure(".", background=bg, foreground=fg)
-        style.configure("TFrame", background=bg)
-        style.configure("TLabel", background=bg, foreground=fg, font=("Segoe UI", 10))
-        style.configure("Card.TLabelframe", background=bg, foreground=accent)
-        style.configure("Card.TLabelframe.Label", background=bg, foreground=accent, font=("Segoe UI", 11, "bold"))
-        
-        style.configure("TButton", background=accent_bg, foreground=fg, borderwidth=1, bordercolor=border_col, font=("Segoe UI", 9, "bold"))
-        style.map("TButton", background=[("active", accent)], foreground=[("active", bg)])
-        
-        style.configure("TCombobox", background=field_bg, foreground=fg, fieldbackground=field_bg, bordercolor=border_col)
-        style.map("TCombobox", fieldbackground=[("readonly", field_bg)], background=[("readonly", field_bg)])
-        
-        style.configure("TEntry", background=field_bg, foreground=fg, fieldbackground=field_bg, bordercolor=border_col)
-        
-        style.configure("Treeview", background=field_bg, foreground=fg, fieldbackground=field_bg, rowheight=24, borderwidth=0)
-        style.configure("Treeview.Heading", background=accent_bg, foreground=accent, font=("Segoe UI", 10, "bold"))
-        style.map("Treeview", background=[("selected", select_bg)], foreground=[("selected", select_fg)])
-
-        # Recursively apply styles to standard Tkinter widgets
-        self._apply_theme_to_custom_widgets(self.root, bg, field_bg, fg, select_bg)
-
-    def _apply_theme_to_custom_widgets(self, widget, bg, field_bg, fg, select_bg):
-        if widget == self.root:
-            self.root.configure(bg=bg)
-            
-        for child in widget.winfo_children():
-            if isinstance(child, tk.Text):
-                child.configure(
-                    bg=field_bg, 
-                    fg=fg, 
-                    insertbackground=fg, 
-                    relief="flat", 
-                    highlightthickness=1, 
-                    highlightbackground=select_bg, 
-                    highlightcolor=fg
-                )
-            elif isinstance(child, tk.Canvas):
-                child.configure(bg=bg, highlightthickness=0)
-            
-            self._apply_theme_to_custom_widgets(child, bg, field_bg, fg, select_bg)
-
 
 if __name__ == "__main__":
     root = tk.Tk()

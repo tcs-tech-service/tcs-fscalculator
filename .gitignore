@@ -21,3 +21,21 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Environment files (API Keys)
+.env
+.env.local
+
+# Node / Python Dependencies
+node_modules/
+__pycache__/
+venv/
+.venv/
+
+# Antigravity local cache & logs
+.antigravity/
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
