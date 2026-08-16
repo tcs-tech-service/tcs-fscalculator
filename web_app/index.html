@@ -3,160 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TCT Feeds & Speeds Calculator</title>
+    <title>TCT Feeds & Speeds Calculator | Engineering Portal</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body data-theme="light">
-    <header>
-        <div class="header-content">
-            <div class="logo-container">
-                <img src="20150804 TCT logo.png" alt="TCT Logo" class="logo">
-                <div class="title-container">
-                    <h1>TCT Feeds & Speeds Calculator</h1>
-                    <p>Engineering Calculations | Multi-Units | Spindle Capping Safeguards</p>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-area">
+                <img src="20150804 TCT logo.png" alt="TCT Logo" class="brand-logo">
+                <div class="brand-titles">
+                    <h1>TCT Feeds & Speeds Portal</h1>
+                    <p class="subtitle">Precision PCB & Micro-Machining Engineering Calculator</p>
                 </div>
             </div>
-            <button id="theme-toggle" class="btn-theme" tabindex="-1">🌙 Dark Mode</button>
+
+            <div class="header-controls">
+                <!-- Utilities -->
+                <div class="utility-actions">
+                    <button id="btn-open-shortcuts" class="btn-utility" title="Keyboard Shortcuts (?)" aria-label="Keyboard Shortcuts" tabindex="-1">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
+                        <span>Shortcuts</span>
+                    </button>
+                    <button id="theme-toggle" class="btn-utility" title="Toggle Theme (Shift+D)" aria-label="Toggle Color Theme" tabindex="-1">
+                        <span id="theme-icon">🌙</span>
+                        <span id="theme-text">Dark Mode</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
-    
-    <main class="container">
-        <div class="panels">
-            <!-- Forward Panel -->
-            <section class="card panel" id="fwd-panel">
-                <h2>Forward: Machine Inputs ➔ Tool Engagement</h2>
-                
-                <div class="input-group">
-                    <label for="fwd-dia">Tool Diameter:</label>
-                    <input type="text" id="fwd-dia" class="combo" list="fwd-dia-list" tabindex="1">
-                    <datalist id="fwd-dia-list"></datalist>
-                    <select id="fwd-dia-unit" class="unit-toggle" tabindex="-1">
-                        <option value="in">in</option>
-                        <option value="mm">mm</option>
-                    </select>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+        <div class="panels-grid single-panel-layout" id="panels-wrapper">
+            
+            <!-- Unified Feeds & Speeds Calculator Panel -->
+            <section class="card-panel" id="panel-recommend" role="region" aria-label="Feeds and Speeds Calculator">
+                <div class="panel-header">
+                    <div class="panel-title-area">
+                        <span class="workflow-icon recommend-icon">⚡</span>
+                        <div>
+                            <h2>Feeds & Speeds Calculator</h2>
+                            <p class="panel-desc">Precision cutting speed, chipload, feed rate, and spindle speed calculator for CNC PCB and micro-machining.</p>
+                        </div>
+                    </div>
+                    <span class="status-chip live-chip">● Live Active</span>
                 </div>
 
-                <div class="input-group">
-                    <label for="fwd-fr">Feed Rate:</label>
-                    <input type="number" id="fwd-fr" value="48.0" step="any" tabindex="2">
-                    <select id="fwd-fr-unit" class="unit-toggle" tabindex="-1">
-                        <option value="IPM">IPM</option>
-                        <option value="m/min">m/min</option>
-                        <option value="mm/sec">mm/sec</option>
-                    </select>
+                <!-- Setup Section -->
+                <div class="config-section">
+                    <!-- Top Row: Tool Diameter (Left) + Unit System (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-dia">Tool Diameter (D):</label>
+                                <span class="info-tip" title="Type to search standard sizes from diameter.csv, use arrow keys, or click dropdown arrow">ℹ️</span>
+                            </div>
+                            <div class="searchable-csv-wrapper" id="rev-dia-wrapper">
+                                <div class="searchable-input-box">
+                                    <input type="text" id="rev-dia" class="form-input searchable-input" placeholder="Type or select size..." value="0.0098 (0.25mm)" autocomplete="off" spellcheck="false" tabindex="1">
+                                    <button type="button" class="searchable-toggle-btn" id="rev-dia-toggle" tabindex="-1" title="Show all diameter options" aria-label="Toggle diameter list">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </button>
+                                    <select id="rev-dia-unit" class="unit-select" aria-label="Tool Diameter Unit" tabindex="-1">
+                                        <option value="in" selected>in</option>
+                                        <option value="mm">mm</option>
+                                    </select>
+                                </div>
+                                <div class="searchable-popup" id="rev-dia-popup" style="display: none;">
+                                    <ul class="searchable-list" id="rev-dia-list" role="listbox"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label>Unit System:</label>
+                                <span class="info-tip" title="Toggle global units between Imperial and Metric">ℹ️</span>
+                            </div>
+                            <div class="unit-slider-switch" id="unit-slider-switch" title="Toggle between Imperial and Metric">
+                                <input type="checkbox" id="unit-slider-checkbox" class="unit-slider-input" aria-label="Toggle measurement unit system" tabindex="-1">
+                                <label for="unit-slider-checkbox" class="unit-slider-label">
+                                    <span class="unit-slider-opt opt-imperial opt-inches active" id="slider-opt-imperial">Imperial (in)</span>
+                                    <span class="unit-slider-opt opt-metric" id="slider-opt-metric">Metric (mm)</span>
+                                    <span class="unit-slider-thumb" id="unit-slider-thumb"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Material Preset (Hidden) -->
+                    <div class="form-row" id="row-rev-material" style="display: none;">
+                        <div class="label-with-tip">
+                            <label for="rev-material">Workpiece Material:</label>
+                            <span class="info-tip" title="Auto-populates verified cutting speeds (SFM) and chip load (fz)">ℹ️</span>
+                        </div>
+                        <div class="input-full">
+                            <select id="rev-material" class="form-select material-select" tabindex="-1">
+                                <option value="FR4">FR4 (Standard PCB Substrate) — 400 SFM / 0.50 mil Chipload</option>
+                                <option value="High Speed Digital">High Speed Digital (Megtron / Rogers) — 200 SFM / 0.50 mil</option>
+                                <option value="Polyimide">Polyimide (Flex PCB / Rigid-Flex) — 200 SFM / 0.50 mil</option>
+                                <option value="Teflon">Teflon (PTFE / RF High Frequency) — 200 SFM / 0.90 mil</option>
+                                <option value="Custom" selected>Custom / Manual Parameter Entry</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Primary Parameters Row 1: Chipload (Left) + Feed Rate (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-fz">Chipload (fz / IPT):</label>
+                                <span class="info-tip" title="Feed per tooth / advance per revolution">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-fz" class="form-input" value="0.5" step="any" tabindex="2">
+                                <select id="rev-fz-unit" class="unit-select" aria-label="Chipload Unit" tabindex="-1">
+                                    <option value="0.001 in/rev">0.001 in/rev (mil)</option>
+                                    <option value="micron/rev">µm/rev</option>
+                                    <option value="in/tooth">in/tooth</option>
+                                    <option value="mm/tooth">mm/tooth</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="fwd-fr">Feed Rate (F):</label>
+                                <span class="info-tip" title="CNC Table Linear Travel Rate">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="fwd-fr" class="form-input" value="48.0" step="any" tabindex="4">
+                                <select id="fwd-fr-unit" class="unit-select" aria-label="Feed Rate Unit" tabindex="-1">
+                                    <option value="IPM">IPM</option>
+                                    <option value="m/min">m/min</option>
+                                    <option value="mm/sec">mm/sec</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Primary Parameters Row 2: Cutting Speed (Left) + Spindle Speed (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-vc">Cutting Speed (Vc):</label>
+                                <span class="info-tip" title="Surface cutting speed at the tool perimeter (SFM or m/min)">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-vc" class="form-input" value="200.0" step="any" tabindex="3">
+                                <select id="rev-vc-unit" class="unit-select" aria-label="Cutting Speed Unit" tabindex="-1">
+                                    <option value="SFM">SFM</option>
+                                    <option value="m/min">m/min</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="fwd-krpm">Spindle Speed (N):</label>
+                                <span class="info-tip" title="Spindle Rotational Velocity in thousands of RPM">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="fwd-krpm" class="form-input" value="78.0" step="any" tabindex="5">
+                                <span class="unit-static">krpm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safeguard Row 4: Min Spindle Speed (Left) + Max Spindle Speed (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-min-rpm">Min Spindle Speed Limit:</label>
+                                <span class="info-tip" title="Spindle minimum operating threshold in krpm (e.g. 20 = 20,000 RPM). Enter 0 for no minimum limit.">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-min-rpm" class="form-input" value="20.0" min="0" step="any" tabindex="-1">
+                                <span class="unit-static">krpm (0=None)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-max-rpm">Max Spindle Speed Limit:</label>
+                                <span class="info-tip" title="Spindle maximum speed limit in krpm (e.g. 200 = 200,000 RPM). Enter 0 for unlimited / no capping.">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-max-rpm" class="form-input" value="200.0" min="0" step="any" tabindex="-1">
+                                <span class="unit-static">krpm (0=Unlimited)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spindle Protection Status Banner -->
+                    <div class="safeguard-status-row">
+                        <div class="safeguard-status-pill" id="safeguard-status-indicator">
+                            <span class="safeguard-dot active" id="safeguard-dot"></span>
+                            <span id="safeguard-status-text">Spindle Limits Active (20.0 – 200.0 krpm)</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="fwd-krpm">Spindle Speed:</label>
-                    <input type="number" id="fwd-krpm" value="78.0" step="any" tabindex="3">
-                    <span class="unit-label">krpm</span>
+                <!-- Spindle Capping Warning Callout -->
+                <div id="callout-rev-capping" class="capping-callout hidden" role="alert">
+                    <div class="callout-header">
+                        <span class="callout-icon">⚠️</span>
+                        <strong id="capping-callout-title">Spindle Capping Safeguard Active</strong>
+                    </div>
+                    <p id="capping-callout-desc" class="callout-text"></p>
+                    <div class="capping-metrics-grid" id="capping-metrics">
+                        <!-- Dynamically populated -->
+                    </div>
                 </div>
 
-                <div class="input-group" style="display: none;">
-                    <label for="fwd-flutes">Flutes (Z):</label>
-                    <input type="number" id="fwd-flutes" value="1" step="1" min="1" tabindex="-1">
-                    <span class="unit-label">flutes</span>
+                <!-- Output KPI Cards -->
+                <div class="kpi-cards-grid">
+                    <div class="kpi-card highlight-kpi">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Recommended Feed Rate</span>
+                            <span class="kpi-unit" id="kpi-rev-fr-unit">IPM</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-rev-fr">--</span>
+                            <span class="kpi-sub-val" id="kpi-rev-fr-sub">-- m/min</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Recommended Spindle Speed</span>
+                            <span class="kpi-unit" id="kpi-rev-krpm-unit">krpm</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-rev-krpm">--</span>
+                            <span class="kpi-sub-val" id="kpi-rev-rpm-sub">-- RPM</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Drilling MRR</span>
+                            <span class="kpi-unit" id="kpi-rev-mrr-unit">in³/min</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-rev-mrr">--</span>
+                            <span class="kpi-sub-val" id="kpi-rev-mrr-sub">-- cm³/min</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card highlight-kpi">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Resulting Chipload (fz)</span>
+                            <span class="kpi-unit" id="kpi-fwd-fz-unit">mil/rev</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-fwd-fz">--</span>
+                            <span class="kpi-sub-val" id="kpi-fwd-fz-sub">-- µm/rev</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Resulting Cutting Speed</span>
+                            <span class="kpi-unit" id="kpi-fwd-vc-unit">SFM</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-fwd-vc">--</span>
+                            <span class="kpi-sub-val" id="kpi-fwd-vc-sub">-- m/min</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Verified MRR</span>
+                            <span class="kpi-unit" id="kpi-fwd-mrr-unit">in³/min</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-fwd-mrr">--</span>
+                            <span class="kpi-sub-val" id="kpi-fwd-mrr-sub">-- cm³/min</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="actions">
-                    <button id="btn-fwd-calc" class="btn primary" tabindex="-1">Calculate</button>
-                    <button id="btn-fwd-copy" class="btn" tabindex="-1">Copy Results</button>
-                    <button id="btn-fwd-export" class="btn" tabindex="-1">Export CSV</button>
-                    <button id="btn-fwd-reset" class="btn" tabindex="-1">Reset</button>
+                <!-- Action Toolbar -->
+                <div class="actions-dock">
+                    <button type="button" id="btn-rev-calc" class="btn btn-primary" title="Recalculate (Ctrl+Enter)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span>Calculate</span>
+                    </button>
+                    <button type="button" id="btn-rev-copy" class="btn btn-secondary" title="Export Engineering & Machine Parameters as Image to Clipboard (Ctrl+Shift+C)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Copy Image</span>
+                    </button>
+                    <button type="button" id="btn-rev-export" class="btn btn-secondary" title="Export CSV (Ctrl+Shift+E)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Export CSV</span>
+                    </button>
+                    <button type="button" id="btn-rev-reset" class="btn btn-ghost" title="Reset Inputs (Ctrl+Shift+R)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Reset</span>
+                    </button>
                 </div>
 
-                <table class="results-table" id="table-fwd">
-                    <thead>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Imperial</th>
-                            <th>Metric</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows populated by JS -->
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- Reverse Panel -->
-            <section class="card panel" id="rev-panel">
-                <h2>Reverse: Tool Engagement ➔ Machine Inputs</h2>
-                
-
-
-                <div class="input-group">
-                    <label for="rev-dia">Tool Diameter:</label>
-                    <input type="text" id="rev-dia" class="combo" list="rev-dia-list" tabindex="-1">
-                    <datalist id="rev-dia-list"></datalist>
-                    <select id="rev-dia-unit" class="unit-toggle" tabindex="-1">
-                        <option value="in">in</option>
-                        <option value="mm">mm</option>
-                    </select>
+                <!-- Full Engineering Specs Table -->
+                <div class="table-wrapper">
+                    <table class="engineering-table" id="table-rev">
+                        <thead>
+                            <tr>
+                                <th>Engineering Parameter</th>
+                                <th>Imperial Value</th>
+                                <th>Metric Equivalent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="input-group">
-                    <label for="rev-vc">Cutting Speed:</label>
-                    <input type="number" id="rev-vc" value="200.0" step="any" tabindex="4">
-                    <select id="rev-vc-unit" class="unit-toggle" tabindex="-1">
-                        <option value="SFM">SFM</option>
-                        <option value="m/min">m/min</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="rev-fz">Chipload (fz):</label>
-                    <input type="number" id="rev-fz" value="2.5" step="any" tabindex="5">
-                    <select id="rev-fz-unit" class="unit-toggle" tabindex="-1">
-                        <option value="0.001&quot; per revoluation">0.001" per revoluation</option>
-                        <option value="micron per revoluation">micron per revoluation</option>
-                    </select>
-                </div>
-
-                <div class="input-group" style="display: none;">
-                    <label for="rev-flutes">Flutes (Z):</label>
-                    <input type="number" id="rev-flutes" value="1" step="1" min="1" tabindex="-1">
-                    <span class="unit-label">flutes</span>
-                </div>
-
-                <div class="input-group">
-                    <label for="rev-max-rpm">Max Spindle Speed:</label>
-                    <input type="number" id="rev-max-rpm" value="200.0" step="any" tabindex="-1">
-                    <span class="unit-label">krpm (0=None)</span>
-                </div>
-
-                <div class="actions">
-                    <button id="btn-rev-calc" class="btn primary" tabindex="-1">Calculate</button>
-                    <button id="btn-rev-copy" class="btn" tabindex="-1">Copy Results</button>
-                    <button id="btn-rev-export" class="btn" tabindex="-1">Export CSV</button>
-                    <button id="btn-rev-reset" class="btn" tabindex="-1">Reset</button>
-                </div>
-
-                <div id="lbl-rev-cap-warn" class="warning-text"></div>
-
-                <table class="results-table" id="table-rev">
-                    <thead>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Imperial</th>
-                            <th>Metric</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows populated by JS -->
-                    </tbody>
-                </table>
             </section>
         </div>
     </main>
 
-    <footer class="status-bar">
-        <span id="status-text">Ready | Enter parameters to calculate Speeds & Feeds.</span>
+    <!-- Sticky Footer Status Bar -->
+    <footer class="app-status-bar">
+        <div class="status-content">
+            <span class="status-pulse"></span>
+            <span id="status-text">Ready | Enter or adjust parameters to calculate Speeds & Feeds.</span>
+        </div>
+        <div class="status-shortcuts-hint">
+            <span>Press <kbd>?</kbd> for shortcuts</span>
+        </div>
     </footer>
-    
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Keyboard Shortcuts Modal Dialog -->
+    <div id="shortcuts-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
+                    <h3 id="shortcuts-title">Keyboard Shortcuts & Fast Navigation</h3>
+                </div>
+                <button type="button" id="btn-close-shortcuts" class="modal-close-btn" aria-label="Close modal" tabindex="-1">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcut-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Force Recalculate / Refresh</span>
+                        <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Copy Parameters as Image to Clipboard</span>
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Export Results to CSV</span>
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Reset Current Workflow (With Undo)</span>
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Toggle Dark / Light Theme</span>
+                        <kbd>Shift</kbd> + <kbd>D</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Toggle Imperial / Metric Mode</span>
+                        <kbd>Shift</kbd> + <kbd>U</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Switch Workflow Tab</span>
+                        <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> / <kbd>4</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Show / Hide This Help Sheet</span>
+                        <kbd>?</kbd> or <kbd>Esc</kbd>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="sizes.js"></script>
     <script src="script.js"></script>
 </body>
