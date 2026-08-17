@@ -1,0 +1,4039 @@
+<!DOCTYPE html>
+<html lang="en" data-device="unknown">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCT Feeds & Speeds Calculator | Engineering Portal</title>
+    <style>
+/* ==========================================================================
+   TCT Feeds & Speeds Calculator - Modern Engineering Design System
+   ========================================================================== */
+
+:root {
+    /* Color Tokens (Light Theme) */
+    --bg-page: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #ffffff;
+    --bg-surface-muted: #f1f5f9;
+    --bg-surface-hover: #e2e8f0;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
+    
+    --brand-primary: #4f46e5;
+    --brand-primary-hover: #4338ca;
+    --brand-primary-subtle: #eef2ff;
+    --brand-primary-border: #c7d2fe;
+    
+    --accent-recommend: #0284c7;
+    --accent-recommend-subtle: #f0f9ff;
+    --accent-verify: #0d9488;
+    --accent-verify-subtle: #f0fdfa;
+    
+    --border-subtle: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --border-focus: #4f46e5;
+    
+    --state-warning-bg: #fffbeb;
+    --state-warning-border: #fde68a;
+    --state-warning-text: #b45309;
+    --state-warning-icon: #f59e0b;
+    
+    --state-success-bg: #ecfdf5;
+    --state-success-text: #047857;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-full: 9999px;
+    
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Responsive Breakpoints */
+    --bp-tablet: 768px;
+    --bp-desktop: 1024px;
+}
+
+[data-theme="dark"] {
+    /* Color Tokens (Dark Theme) */
+    --bg-page: #0b0f19;
+    --bg-surface: #131b2e;
+    --bg-surface-elevated: #1a243b;
+    --bg-surface-muted: #1e293b;
+    --bg-surface-hover: #27354f;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+    
+    --brand-primary: #6366f1;
+    --brand-primary-hover: #818cf8;
+    --brand-primary-subtle: #1e1b4b;
+    --brand-primary-border: #3730a3;
+    
+    --accent-recommend: #38bdf8;
+    --accent-recommend-subtle: #082f49;
+    --accent-verify: #2dd4bf;
+    --accent-verify-subtle: #042f2e;
+    
+    --border-subtle: #1e293b;
+    --border-strong: #334155;
+    --border-focus: #818cf8;
+    
+    --state-warning-bg: #451a03;
+    --state-warning-border: #78350f;
+    --state-warning-text: #fde68a;
+    --state-warning-icon: #fbbf24;
+    
+    --state-success-bg: #064e3b;
+    --state-success-text: #a7f3d0;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+}
+
+/* Reset & Base Setup */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Focus Accessibility Styling */
+*:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Header & Navigation
+   ========================================================================== */
+
+.app-header {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.875rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: var(--shadow-sm);
+}
+
+.header-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.brand-area {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.brand-logo {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+}
+
+.brand-titles h1 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+.brand-titles .subtitle {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Global Unit Slider Switcher */
+.unit-slider-switch {
+    position: relative;
+    display: flex;
+    width: 100%;
+    user-select: none;
+}
+
+.unit-slider-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.unit-slider-label {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: 38px;
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    padding: 3px;
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+}
+
+.unit-slider-label:hover {
+    border-color: var(--border-focus);
+    background-color: var(--bg-surface-hover);
+}
+
+.unit-slider-opt {
+    position: relative;
+    z-index: 3;
+    flex: 1;
+    text-align: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: color 0.25s ease;
+    cursor: pointer;
+    line-height: 30px;
+    user-select: none;
+}
+
+.unit-slider-opt.active {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.unit-slider-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    height: 30px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    z-index: 2;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Checked state = Metric */
+.unit-slider-input:checked + .unit-slider-label .unit-slider-thumb {
+    transform: translateX(100%);
+}
+
+.unit-slider-input:checked + .unit-slider-label .opt-metric {
+    color: var(--brand-primary);
+    font-weight: 700;
+}
+
+.unit-slider-input:not(:checked) + .unit-slider-label .opt-imperial,
+.unit-slider-input:not(:checked) + .unit-slider-label .opt-inches {
+    color: var(--brand-primary);
+    font-weight: 700;
+}
+
+[data-theme="dark"] .unit-slider-thumb {
+    background: #242b35;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Utilities */
+.utility-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-utility {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 0.45rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-utility:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+}
+
+/* Workflow Navigation Tabs */
+.workflow-nav {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.5rem 2rem;
+}
+
+.nav-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mode-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.mode-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-tab:hover {
+    background-color: var(--bg-surface-muted);
+    color: var(--text-primary);
+}
+
+.mode-tab.active {
+    background-color: var(--brand-primary-subtle);
+    color: var(--brand-primary);
+    border-color: var(--brand-primary-border);
+}
+
+.tab-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface-muted);
+    color: var(--text-muted);
+}
+
+.mode-tab.active .tab-badge {
+    background-color: var(--bg-surface);
+    color: var(--brand-primary);
+}
+
+.sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--state-success-text);
+    background-color: var(--state-success-bg);
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-full);
+}
+
+/* ==========================================================================
+   Main Content Layout
+   ========================================================================== */
+
+.main-container {
+    flex: 1;
+    max-width: 1040px;
+    width: 100%;
+    margin: 1.5rem auto;
+    padding: 0 1.5rem;
+}
+
+.panels-grid {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.panels-grid .card-panel {
+    width: 100%;
+}
+
+/* Panel Card */
+.card-panel {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-panel.panel-hidden {
+    display: none;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 1rem;
+}
+
+.panel-title-area {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.workflow-icon {
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-surface-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recommend-icon {
+    background-color: var(--accent-recommend-subtle);
+    color: var(--accent-recommend);
+}
+
+.verify-icon {
+    background-color: var(--accent-verify-subtle);
+    color: var(--accent-verify);
+}
+
+.panel-title-area h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.panel-desc {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-top: 0.125rem;
+}
+
+.status-chip {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-full);
+}
+
+.live-chip {
+    background-color: var(--state-success-bg);
+    color: var(--state-success-text);
+}
+
+/* ==========================================================================
+   Form Controls & Inputs
+   ========================================================================== */
+
+.config-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.form-row-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-row-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.label-with-tip {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.label-with-tip label, .form-row-compact label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.info-tip {
+    font-size: 0.75rem;
+    cursor: help;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.info-tip:hover {
+    opacity: 1;
+}
+
+.input-with-unit {
+    display: flex;
+    position: relative;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-with-unit:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.form-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.55rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    min-width: 0;
+}
+
+.form-select, .material-select {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-select:focus, .material-select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* Searchable CSV Autocomplete Component */
+.searchable-csv-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.searchable-input-box {
+    display: flex;
+    position: relative;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchable-input-box:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.searchable-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.55rem 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    min-width: 0;
+}
+
+.searchable-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.625rem;
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.searchable-toggle-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+}
+
+.searchable-toggle-btn.open svg {
+    transform: rotate(180deg);
+}
+
+/* Searchable Popup */
+.searchable-popup {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+    animation: popupFadeIn 0.15s ease-out;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.searchable-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0;
+}
+
+.searchable-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.searchable-item:hover, .searchable-item.active {
+    background-color: var(--bg-surface-hover);
+    color: var(--brand-primary);
+}
+
+.searchable-item.selected {
+    background-color: var(--accent-recommend-subtle);
+    font-weight: 700;
+}
+
+.searchable-item.custom-item {
+    border-top: 1px dashed var(--border-subtle);
+    color: var(--brand-primary);
+    font-style: italic;
+    background-color: var(--bg-surface-muted);
+}
+
+.searchable-item.custom-item:hover, .searchable-item.custom-item.active {
+    background-color: var(--brand-primary);
+    color: #ffffff;
+}
+
+.searchable-item .item-badge {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface-muted);
+    color: var(--text-secondary);
+}
+
+.searchable-item:hover .item-badge, .searchable-item.active .item-badge {
+    background-color: var(--border-focus);
+    color: #ffffff;
+}
+
+.match-hl {
+    background: transparent;
+    color: var(--brand-primary);
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.searchable-item.active .match-hl {
+    color: inherit;
+}
+
+.searchable-empty {
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.unit-select {
+    border: none;
+    border-left: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface-muted);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0 0.625rem;
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+    outline: none;
+    cursor: pointer;
+}
+
+.unit-static {
+    display: flex;
+    align-items: center;
+    border-left: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface-muted);
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0 0.75rem;
+    white-space: nowrap;
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+}
+
+/* Advanced Tool Geometry Accordion (Hidden) */
+.advanced-details {
+    display: none !important;
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.advanced-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.advanced-summary:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+}
+
+.summary-title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.summary-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+/* Safeguard Status Indicator Pill */
+.safeguard-status-row {
+    display: flex;
+    width: 100%;
+}
+
+.safeguard-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    height: 38px;
+    padding: 0 0.875rem;
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    user-select: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.safeguard-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--text-muted);
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.safeguard-dot.active {
+    background-color: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.safeguard-dot.capped {
+    background-color: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+.safeguard-dot.unlimited {
+    background-color: var(--brand-primary);
+    box-shadow: 0 0 6px rgba(79, 70, 229, 0.4);
+}
+
+/* Spindle Capping Warning Callout */
+.capping-callout {
+    background-color: var(--state-warning-bg);
+    border: 1px solid var(--state-warning-border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.capping-callout.hidden {
+    display: none;
+}
+
+.callout-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--state-warning-text);
+    font-size: 0.875rem;
+}
+
+.callout-text {
+    font-size: 0.8125rem;
+    color: var(--state-warning-text);
+    line-height: 1.4;
+}
+
+.capping-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.capping-metric-tile {
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--state-warning-border);
+    border-radius: var(--radius-sm);
+    padding: 0.375rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme="dark"] .capping-metric-tile {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.cap-tile-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--state-warning-text);
+}
+
+.cap-tile-val {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--state-warning-text);
+}
+
+/* ==========================================================================
+   Output KPI Cards
+   ========================================================================== */
+
+.kpi-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .kpi-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kpi-card {
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.125rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-card.highlight-kpi {
+    background-color: var(--brand-primary-subtle);
+    border-color: var(--brand-primary-border);
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kpi-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kpi-card.highlight-kpi .kpi-label {
+    color: var(--brand-primary);
+}
+
+.kpi-unit {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.kpi-value-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-main-val {
+    font-family: var(--font-mono);
+    font-size: 1.625rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.kpi-card.highlight-kpi .kpi-main-val {
+    color: var(--brand-primary);
+}
+
+.kpi-sub-val {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Action Toolbar / Dock
+   ========================================================================== */
+
+.actions-dock {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background-color: var(--brand-primary);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background-color: var(--bg-surface-muted);
+    color: var(--text-secondary);
+    border-color: var(--border-subtle);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--text-muted);
+    border-color: transparent;
+}
+
+.btn-ghost:hover {
+    background-color: var(--bg-surface-muted);
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Engineering Results Table
+   ========================================================================== */
+
+.table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-surface);
+}
+
+.engineering-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.engineering-table th, .engineering-table td {
+    padding: 0.625rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.engineering-table th {
+    background-color: var(--bg-surface-muted);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.engineering-table tbody tr:hover {
+    background-color: var(--bg-surface-muted);
+}
+
+.engineering-table td:nth-child(2), .engineering-table td:nth-child(3) {
+    font-family: var(--font-mono);
+    font-weight: 500;
+}
+
+.engineering-table tr.divider-row td {
+    background-color: var(--bg-surface-muted);
+    padding: 0.25rem 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Status Bar & Modals
+   ========================================================================== */
+
+.app-status-bar {
+    background-color: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0.625rem 2rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.status-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--state-success-text);
+    box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.2);
+    animation: pulse 2s infinite;
+}
+
+.status-shortcuts-hint kbd, .shortcut-item kbd {
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 3.5rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.toast {
+    background-color: var(--bg-surface-elevated);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-lg);
+    color: var(--text-primary);
+    padding: 0.75rem 1.125rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    pointer-events: auto;
+    animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.toast-success {
+    border-left: 4px solid var(--state-success-text);
+}
+
+.toast-undo-btn {
+    background-color: var(--brand-primary);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Shortcuts Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    width: 90%;
+    max-width: 520px;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--text-primary);
+}
+
+.modal-title-wrap h3 {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.modal-close-btn:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.shortcut-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.9); }
+}
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==========================================================================
+   Responsive Design & Device Dataset Layout Rules
+   Reference: responsive-design-implementation.md
+   ========================================================================== */
+
+/* ---------- Mobile Layout (< 768px) & html[data-device="mobile"] ---------- */
+@media (max-width: 767px), html[data-device="mobile"] {
+    /* Eliminate Top Header on Mobile */
+    .app-header {
+        display: none !important;
+    }
+
+    /* Eliminate Panel Header (Icon, Title, Description, Live Badge) on Mobile */
+    .panel-header {
+        display: none !important;
+    }
+
+    .main-container {
+        padding: 0.5rem 0.5rem 4.5rem;
+    }
+
+    .card-panel,
+    .calc-panel {
+        padding: 0.875rem 0.75rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .form-row-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.625rem 0.5rem;
+        margin-bottom: 0.625rem;
+    }
+
+    .form-row-compact {
+        min-width: 0;
+    }
+
+    .label-with-tip {
+        margin-bottom: 0.25rem;
+    }
+
+    .label-with-tip label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .label-with-tip .info-tip {
+        display: none;
+    }
+
+    .input-with-unit,
+    .searchable-input-box {
+        min-width: 0;
+    }
+
+    .form-input {
+        font-size: 0.8125rem;
+        padding: 0.4rem 0.45rem;
+    }
+
+    .unit-select {
+        padding: 0 0.25rem;
+        font-size: 0.6875rem;
+        max-width: 72px;
+    }
+
+    .unit-static {
+        padding: 0 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .unit-slider-switch {
+        width: 100%;
+        height: 36px;
+    }
+
+    .unit-slider-label {
+        font-size: 0.6875rem;
+        height: 36px;
+        min-height: 36px;
+    }
+
+    .unit-slider-opt {
+        font-size: 0.6875rem;
+        padding: 0 0.25rem;
+    }
+
+    .unit-slider-thumb {
+        height: 28px;
+    }
+
+    .kpi-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 0.625rem;
+    }
+
+    .kpi-card {
+        padding: 0.875rem 1rem;
+    }
+
+    .kpi-main-val {
+        font-size: 1.5rem;
+    }
+
+    .actions-dock {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .actions-dock .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.625rem 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    .safeguard-status-pill {
+        height: auto;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .capping-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-wrapper {
+        border-radius: var(--radius-md);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .engineering-table {
+        min-width: 520px;
+    }
+
+    .app-status-bar {
+        padding: 0.5rem 1rem;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-start;
+    }
+
+    .status-shortcuts-hint {
+        display: none;
+    }
+
+    .toast-container {
+        right: 1rem;
+        bottom: 3.25rem;
+        left: 1rem;
+    }
+
+    .toast {
+        width: 100%;
+        font-size: 0.8125rem;
+        padding: 0.625rem 0.875rem;
+    }
+}
+
+/* ---------- Tablet Layout (768px - 1023px) & html[data-device="tablet"] ---------- */
+@media (min-width: 768px) and (max-width: 1023px), html[data-device="tablet"] {
+    .main-container {
+        padding: 1.25rem 1.25rem 4.5rem;
+        max-width: 100%;
+    }
+
+    .calc-panel {
+        padding: 1.5rem;
+    }
+
+    .kpi-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    .actions-dock {
+        flex-wrap: wrap;
+    }
+}
+
+/* ---------- Desktop Layout (>= 1024px) & html[data-device="desktop"] ---------- */
+@media (min-width: 1024px), html[data-device="desktop"] {
+    .main-container {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 5rem;
+    }
+
+    .calc-panel {
+        padding: 2rem;
+    }
+
+    .kpi-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* ---------- Touch Device Ergonomics: body[data-touch="true"] ---------- */
+body[data-touch="true"] .btn,
+body[data-touch="true"] .form-input,
+body[data-touch="true"] .unit-select,
+body[data-touch="true"] .searchable-toggle-btn {
+    min-height: 42px;
+}
+
+body[data-touch="true"] .searchable-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+}
+
+body[data-touch="true"] .unit-slider-label {
+    min-height: 40px;
+}
+
+/* ==========================================================================
+   Adaptive Design (Approach 2, Variant 4A - Client-Side Device Branching)
+   ========================================================================== */
+
+/* ---------- Adaptive Mobile Card-Based Summary ---------- */
+.adaptive-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.adaptive-card-group {
+    background-color: var(--bg-surface-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.adaptive-card-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background-color: var(--bg-surface-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.adaptive-card-group-header h4 {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--brand-primary);
+}
+
+.group-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background-color: var(--brand-primary);
+}
+
+.adaptive-card-items {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 0.375rem;
+}
+
+.adaptive-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 0.75rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.adaptive-item-card.item-highlight {
+    border-left: 3px solid var(--brand-primary);
+    background-color: var(--bg-surface-elevated);
+}
+
+.item-card-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.item-card-values {
+    text-align: right;
+}
+
+.item-card-values .val-primary {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+}
+
+.item-card-values .val-secondary {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.mobile-empty-card {
+    padding: 1.5rem;
+    text-align: center;
+    background-color: var(--bg-surface-muted);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* ---------- Adaptive Mobile Bottom Action Bar ---------- */
+.adaptive-mobile-bottom-dock {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: var(--bg-surface);
+    border-top: 1px solid var(--border-strong);
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.5rem;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
+.mobile-dock-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    height: 100%;
+    padding: 0.25rem 0;
+    transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.mobile-dock-btn:active {
+    transform: scale(0.92);
+}
+
+.mobile-dock-btn .dock-icon {
+    font-size: 1.125rem;
+}
+
+.mobile-dock-btn.dock-btn-calc {
+    color: var(--brand-primary);
+}
+
+.mobile-dock-btn.dock-btn-calc .dock-label {
+    font-weight: 700;
+}
+
+/* Hide desktop table on mobile when adaptive summary is present */
+html[data-device="mobile"] [data-component="desktop-table"] {
+    display: none;
+}
+
+/* Hide mobile-only mounts on desktop & tablet */
+html[data-device="desktop"] .adaptive-mobile-bottom-dock,
+html[data-device="tablet"] .adaptive-mobile-bottom-dock,
+html[data-device="desktop"] [data-mount="adaptive-summary"],
+html[data-device="tablet"] [data-mount="adaptive-summary"],
+html[data-device="desktop"] .mobile-bottom-brand,
+html[data-device="tablet"] .mobile-bottom-brand {
+    display: none !important;
+}
+
+/* ---------- Mobile Bottom Brand (Logo at Bottom of Screen) ---------- */
+.mobile-bottom-brand {
+    display: none;
+}
+
+html[data-device="mobile"] .mobile-bottom-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 1.5rem 0.5rem 4.5rem;
+    text-align: center;
+}
+
+.mobile-bottom-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.9;
+}
+
+.mobile-bottom-tagline {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+</style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Synchronous Inline Device Detection (Approach 2, Variant 4A - FOWC Prevention) -->
+    <script>
+        (function() {
+            var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            var w = window.innerWidth;
+            var dev = (w < 768) ? 'mobile' : (w < 1024 ? 'tablet' : 'desktop');
+            document.documentElement.dataset.device = dev;
+        })();
+    </script>
+</head>
+<body data-theme="light">
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-area">
+                <img src="data:image/png;base64,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" alt="TCT Logo" class="brand-logo">
+                <div class="brand-titles">
+                    <h1>TCT Feeds & Speeds Portal</h1>
+                    <p class="subtitle">Precision PCB & Micro-Machining Engineering Calculator</p>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <!-- Utilities -->
+                <div class="utility-actions">
+                    <button id="btn-open-shortcuts" class="btn-utility" title="Keyboard Shortcuts (?)" aria-label="Keyboard Shortcuts" tabindex="-1">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
+                        <span>Shortcuts</span>
+                    </button>
+                    <button id="theme-toggle" class="btn-utility" title="Toggle Theme (Shift+D)" aria-label="Toggle Color Theme" tabindex="-1">
+                        <span id="theme-icon">🌙</span>
+                        <span id="theme-text">Dark Mode</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+        <div class="panels-grid single-panel-layout" id="panels-wrapper">
+            
+            <!-- Unified Feeds & Speeds Calculator Panel -->
+            <section class="card-panel" id="panel-recommend" role="region" aria-label="Feeds and Speeds Calculator">
+                <div class="panel-header">
+                    <div class="panel-title-area">
+                        <span class="workflow-icon recommend-icon">⚡</span>
+                        <div>
+                            <h2>Feeds & Speeds Calculator</h2>
+                            <p class="panel-desc">Precision cutting speed, chipload, feed rate, and spindle speed calculator for CNC PCB and micro-machining.</p>
+                        </div>
+                    </div>
+                    <span class="status-chip live-chip">● Live Active</span>
+                </div>
+
+                <!-- Setup Section -->
+                <div class="config-section">
+                    <!-- Top Row: Tool Diameter (Left) + Unit System (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-dia">Tool Diameter (D):</label>
+                                <span class="info-tip" title="Type to search standard sizes from diameter.csv, use arrow keys, or click dropdown arrow">ℹ️</span>
+                            </div>
+                            <div class="searchable-csv-wrapper" id="rev-dia-wrapper">
+                                <div class="searchable-input-box">
+                                    <input type="text" id="rev-dia" class="form-input searchable-input" placeholder="Type or select size..." value="0.0098 (0.25mm)" autocomplete="off" spellcheck="false" tabindex="1">
+                                    <button type="button" class="searchable-toggle-btn" id="rev-dia-toggle" tabindex="-1" title="Show all diameter options" aria-label="Toggle diameter list">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </button>
+                                    <select id="rev-dia-unit" class="unit-select" aria-label="Tool Diameter Unit" tabindex="-1">
+                                        <option value="in" selected>in</option>
+                                        <option value="mm">mm</option>
+                                    </select>
+                                </div>
+                                <div class="searchable-popup" id="rev-dia-popup" style="display: none;">
+                                    <ul class="searchable-list" id="rev-dia-list" role="listbox"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label>Unit System:</label>
+                                <span class="info-tip" title="Toggle global units between Imperial and Metric">ℹ️</span>
+                            </div>
+                            <div class="unit-slider-switch" id="unit-slider-switch" title="Toggle between Imperial and Metric">
+                                <input type="checkbox" id="unit-slider-checkbox" class="unit-slider-input" aria-label="Toggle measurement unit system" tabindex="-1">
+                                <label for="unit-slider-checkbox" class="unit-slider-label">
+                                    <span class="unit-slider-opt opt-imperial opt-inches active" id="slider-opt-imperial">Imperial (in)</span>
+                                    <span class="unit-slider-opt opt-metric" id="slider-opt-metric">Metric (mm)</span>
+                                    <span class="unit-slider-thumb" id="unit-slider-thumb"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Material Preset (Hidden) -->
+                    <div class="form-row" id="row-rev-material" style="display: none;">
+                        <div class="label-with-tip">
+                            <label for="rev-material">Workpiece Material:</label>
+                            <span class="info-tip" title="Auto-populates verified cutting speeds (SFM) and chip load (fz)">ℹ️</span>
+                        </div>
+                        <div class="input-full">
+                            <select id="rev-material" class="form-select material-select" tabindex="-1">
+                                <option value="FR4">FR4 (Standard PCB Substrate) — 400 SFM / 0.50 mil Chipload</option>
+                                <option value="High Speed Digital">High Speed Digital (Megtron / Rogers) — 200 SFM / 0.50 mil</option>
+                                <option value="Polyimide">Polyimide (Flex PCB / Rigid-Flex) — 200 SFM / 0.50 mil</option>
+                                <option value="Teflon">Teflon (PTFE / RF High Frequency) — 200 SFM / 0.90 mil</option>
+                                <option value="Custom" selected>Custom / Manual Parameter Entry</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Primary Parameters Row 1: Chipload (Left) + Feed Rate (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-fz">Chipload (fz / IPT):</label>
+                                <span class="info-tip" title="Feed per tooth / advance per revolution">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-fz" class="form-input" value="0.5" step="any" tabindex="2">
+                                <select id="rev-fz-unit" class="unit-select" aria-label="Chipload Unit" tabindex="-1">
+                                    <option value="0.001 in/rev">0.001 in/rev (mil)</option>
+                                    <option value="micron/rev">µm/rev</option>
+                                    <option value="in/tooth">in/tooth</option>
+                                    <option value="mm/tooth">mm/tooth</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="fwd-fr">Feed Rate (F):</label>
+                                <span class="info-tip" title="CNC Table Linear Travel Rate">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="fwd-fr" class="form-input" value="48.0" step="any" tabindex="4">
+                                <select id="fwd-fr-unit" class="unit-select" aria-label="Feed Rate Unit" tabindex="-1">
+                                    <option value="IPM">IPM</option>
+                                    <option value="m/min">m/min</option>
+                                    <option value="mm/sec">mm/sec</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Primary Parameters Row 2: Cutting Speed (Left) + Spindle Speed (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-vc">Cutting Speed (Vc):</label>
+                                <span class="info-tip" title="Surface cutting speed at the tool perimeter (SFM or m/min)">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-vc" class="form-input" value="200.0" step="any" tabindex="3">
+                                <select id="rev-vc-unit" class="unit-select" aria-label="Cutting Speed Unit" tabindex="-1">
+                                    <option value="SFM">SFM</option>
+                                    <option value="m/min">m/min</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="fwd-krpm">Spindle Speed (N):</label>
+                                <span class="info-tip" title="Spindle Rotational Velocity in thousands of RPM">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="fwd-krpm" class="form-input" value="78.0" step="any" tabindex="5">
+                                <span class="unit-static">krpm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safeguard Row 4: Min Spindle Speed (Left) + Max Spindle Speed (Right) -->
+                    <div class="form-row-grid">
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-min-rpm">Min Spindle Speed Limit:</label>
+                                <span class="info-tip" title="Spindle minimum operating threshold in krpm (e.g. 20 = 20,000 RPM). Enter 0 for no minimum limit.">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-min-rpm" class="form-input" value="20.0" min="0" step="any" tabindex="-1">
+                                <span class="unit-static">krpm (0=None)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="label-with-tip">
+                                <label for="rev-max-rpm">Max Spindle Speed Limit:</label>
+                                <span class="info-tip" title="Spindle maximum speed limit in krpm (e.g. 200 = 200,000 RPM). Enter 0 for unlimited / no capping.">ℹ️</span>
+                            </div>
+                            <div class="input-with-unit">
+                                <input type="number" id="rev-max-rpm" class="form-input" value="200.0" min="0" step="any" tabindex="-1">
+                                <span class="unit-static">krpm (0=Unlimited)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spindle Protection Status Banner -->
+                    <div class="safeguard-status-row">
+                        <div class="safeguard-status-pill" id="safeguard-status-indicator">
+                            <span class="safeguard-dot active" id="safeguard-dot"></span>
+                            <span id="safeguard-status-text">Spindle Limits Active (20.0 – 200.0 krpm)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spindle Capping Warning Callout -->
+                <div id="callout-rev-capping" class="capping-callout hidden" role="alert">
+                    <div class="callout-header">
+                        <span class="callout-icon">⚠️</span>
+                        <strong id="capping-callout-title">Spindle Capping Safeguard Active</strong>
+                    </div>
+                    <p id="capping-callout-desc" class="callout-text"></p>
+                    <div class="capping-metrics-grid" id="capping-metrics">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Output KPI Cards -->
+                <div class="kpi-cards-grid">
+                    <div class="kpi-card highlight-kpi">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Recommended Feed Rate</span>
+                            <span class="kpi-unit" id="kpi-rev-fr-unit">IPM</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-rev-fr">--</span>
+                            <span class="kpi-sub-val" id="kpi-rev-fr-sub">-- m/min</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Recommended Spindle Speed</span>
+                            <span class="kpi-unit" id="kpi-rev-krpm-unit">krpm</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-rev-krpm">--</span>
+                            <span class="kpi-sub-val" id="kpi-rev-rpm-sub">-- RPM</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Drilling MRR</span>
+                            <span class="kpi-unit" id="kpi-rev-mrr-unit">in³/min</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-rev-mrr">--</span>
+                            <span class="kpi-sub-val" id="kpi-rev-mrr-sub">-- cm³/min</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card highlight-kpi">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Resulting Chipload (fz)</span>
+                            <span class="kpi-unit" id="kpi-fwd-fz-unit">mil/rev</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-fwd-fz">--</span>
+                            <span class="kpi-sub-val" id="kpi-fwd-fz-sub">-- µm/rev</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Resulting Cutting Speed</span>
+                            <span class="kpi-unit" id="kpi-fwd-vc-unit">SFM</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-fwd-vc">--</span>
+                            <span class="kpi-sub-val" id="kpi-fwd-vc-sub">-- m/min</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Verified MRR</span>
+                            <span class="kpi-unit" id="kpi-fwd-mrr-unit">in³/min</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-main-val" id="kpi-fwd-mrr">--</span>
+                            <span class="kpi-sub-val" id="kpi-fwd-mrr-sub">-- cm³/min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Toolbar -->
+                <div class="actions-dock">
+                    <button type="button" id="btn-rev-calc" class="btn btn-primary" title="Recalculate (Ctrl+Enter)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        <span>Calculate</span>
+                    </button>
+                    <button type="button" id="btn-rev-copy" class="btn btn-secondary" title="Export Engineering & Machine Parameters as Image to Clipboard (Ctrl+Shift+C)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Copy Image</span>
+                    </button>
+                    <button type="button" id="btn-rev-export" class="btn btn-secondary" title="Export CSV (Ctrl+Shift+E)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Export CSV</span>
+                    </button>
+                    <button type="button" id="btn-rev-reset" class="btn btn-ghost" title="Reset Inputs (Ctrl+Shift+R)" tabindex="-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Reset</span>
+                    </button>
+                </div>
+
+                <!-- Adaptive Component Mount: Mobile Card-Based Summary -->
+                <div id="adaptive-summary-mount" data-mount="adaptive-summary"></div>
+
+                <!-- Mobile Bottom Logo & Brand Footer -->
+                <div class="mobile-bottom-brand" data-component="mobile-brand-footer">
+                    <img src="data:image/png;base64,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" alt="TCT Logo" class="mobile-bottom-logo">
+                    <div class="mobile-bottom-tagline">TCT Feeds & Speeds Calculator • Precision Engineering</div>
+                </div>
+
+                <!-- Full Engineering Specs Table (Desktop / Tablet View) -->
+                <div class="table-wrapper" data-component="desktop-table">
+                    <table class="engineering-table" id="table-rev">
+                        <thead>
+                            <tr>
+                                <th>Engineering Parameter</th>
+                                <th>Imperial Value</th>
+                                <th>Metric Equivalent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Adaptive Mobile Bottom Action Bar Mount Point -->
+    <div id="adaptive-mobile-dock-mount" data-mount="mobile-dock"></div>
+
+    <!-- Sticky Footer Status Bar -->
+    <footer class="app-status-bar">
+        <div class="status-content">
+            <span class="status-pulse"></span>
+            <span id="status-text">Ready | Enter or adjust parameters to calculate Speeds & Feeds.</span>
+        </div>
+        <div class="status-shortcuts-hint">
+            <span>Press <kbd>?</kbd> for shortcuts</span>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Keyboard Shortcuts Modal Dialog -->
+    <div id="shortcuts-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
+                    <h3 id="shortcuts-title">Keyboard Shortcuts & Fast Navigation</h3>
+                </div>
+                <button type="button" id="btn-close-shortcuts" class="modal-close-btn" aria-label="Close modal" tabindex="-1">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcut-list">
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Force Recalculate / Refresh</span>
+                        <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Copy Parameters as Image to Clipboard</span>
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Export Results to CSV</span>
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Reset Current Workflow (With Undo)</span>
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Toggle Dark / Light Theme</span>
+                        <kbd>Shift</kbd> + <kbd>D</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Toggle Imperial / Metric Mode</span>
+                        <kbd>Shift</kbd> + <kbd>U</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Switch Workflow Tab</span>
+                        <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> / <kbd>4</kbd>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-desc">Show / Hide This Help Sheet</span>
+                        <kbd>?</kbd> or <kbd>Esc</kbd>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    
+<script>
+/* --- Embedded sizes.js --- */
+const sizesData = {
+  imperial_sizes: ["0.0039 (0.10mm)", "0.0051 (0.13mm)", "0.0059 (0.15mm)", "0.0063 (#96)", "0.0067 (#95)", "0.0071 (#94)", "0.0075 (#93)", "0.0079 (0.20mm)", "0.0083 (#91)", "0.0087 (#90)", "0.0091 (#89)", "0.0095 (#88)", "0.0098 (0.25mm)", "0.01 (#87)", "0.0105 (#86)", "0.011 (#85)", "0.0115 (#84)", "0.0118 (0.30mm)", "0.012 (#83)", "0.0125 (#82)", "0.013 (#81)", "0.0135 (#80)", "0.0138 (0.35mm)", "0.0145 (#79)", "0.0156 (1/64)", "0.0157 (0.40mm)", "0.016 (#78)", "0.0177 (0.45mm)", "0.018 (#77)", "0.0197 (0.50mm)", "0.02 (#76)", "0.021 (#75)", "0.0217 (0.55mm)", "0.0225 (#74)", "0.0236 (0.60mm)", "0.024 (#73)", "0.025 (#72)", "0.0256 (0.65mm)", "0.026 (#71)", "0.0276 (0.70mm)", "0.028 (#70)", "0.0292 (#69)", "0.0295 (0.75mm)", "0.031 (#68)", "0.0312 (1/32)", "0.0315 (0.80mm)", "0.032 (#67)", "0.033 (#66)", "0.0335 (0.85mm)", "0.035 (#65)", "0.0354 (0.90mm)", "0.036 (#64)", "0.037 (#63)", "0.0374 (0.95mm)", "0.038 (#62)", "0.039 (#61)", "0.0394 (1.00mm)", "0.04 (#60)", "0.041 (#59)", "0.0413 (1.05mm)", "0.042 (#58)", "0.043 (#57)", "0.0433 (1.10mm)", "0.0441 (1.12mm)", "0.0453 (1.15mm)", "0.0465 (#56)", "0.0469 (3/64)", "0.0472 (1.20mm)", "0.0492 (1.25mm)", "0.0512 (1.30mm)", "0.052 (#55)", "0.0531 (1.35mm)", "0.055 (#54)", "0.0551 (1.40mm)", "0.0571 (1.45mm)", "0.0591 (1.50mm)", "0.0595 (#53)", "0.061 (1.55mm)", "0.0625 (1/16)", "0.063 (1.60mm)", "0.0635 (#52)", "0.065 (1.65mm)", "0.0669 (1.70mm)", "0.067 (#51)", "0.0689 (1.75mm)", "0.07 (#50)", "0.0709 (1.80mm)", "0.0728 (1.85mm)", "0.073 (#49)", "0.0748 (1.90mm)", "0.076 (#48)", "0.0768 (1.95mm)", "0.0781 (5/64)", "0.0785 (#47)", "0.0787 (2.00mm)", "0.0807 (2.05mm)", "0.081 (#46)", "0.082 (#45)", "0.0827 (2.10mm)", "0.0846 (2.15mm)", "0.086 (#44)", "0.0866 (2.20mm)", "0.0886 (2.25mm)", "0.089 (#43)", "0.0906 (2.30mm)", "0.0925 (2.35mm)", "0.0935 (#42)", "0.0938 (3/32)", "0.0945 (2.40mm)", "0.096 (#41)", "0.0965 (2.45mm)", "0.098 (#40)", "0.0984 (2.50mm)", "0.0995 (#39)", "0.1004 (2.55mm)", "0.1015 (#38)", "0.1024 (2.60mm)", "0.104 (#37)", "0.1043 (2.65mm)", "0.1063 (2.70mm)", "0.1065 (#36)", "0.1083 (2.75mm)", "0.1094 (7/64)", "0.11 (#35)", "0.1102 (2.80mm)", "0.111 (#34)", "0.1122 (2.85mm)", "0.113 (#33)", "0.1142 (2.90mm)", "0.116 (#32)", "0.1161 (2.95mm)", "0.1181 (3.00mm)", "0.12 (#31)", "0.1201 (3.05mm)", "0.122 (3.10mm)", "0.124 (3.15mm)", "0.125 (1/8)", "0.126 (3.20mm)", "0.128 (3.25mm)", "0.1285 (#30)", "0.1299 (3.30mm)", "0.1319 (3.35mm)", "0.1339 (3.40mm)", "0.1358 (3.45mm)", "0.136 (#29)", "0.1378 (3.50mm)", "0.1398 (3.55mm)", "0.1405 (#28)", "0.1406 (9/64)", "0.1417 (3.60mm)", "0.1437 (3.65mm)", "0.144 (#27)", "0.1457 (3.70mm)", "0.147 (#26)", "0.1476 (3.75mm)", "0.1495 (#25)", "0.1496 (3.80mm)", "0.1516 (3.85mm)", "0.152 (#24)", "0.1535 (3.90mm)", "0.154 (#23)", "0.1555 (3.95mm)", "0.1562 (5/32)", "0.157 (#22)", "0.1575 (4.00mm)", "0.159 (#21)", "0.1594 (4.05mm)", "0.161 (#20)", "0.1614 (4.10mm)", "0.1634 (4.15mm)", "0.1654 (4.20mm)", "0.166 (#19)", "0.1673 (4.25mm)", "0.1693 (4.30mm)", "0.1695 (#18)", "0.1713 (4.35mm)", "0.1719 (11/64)", "0.173 (#17)", "0.1732 (4.40mm)", "0.1752 (4.45mm)", "0.177 (#16)", "0.1772 (4.50mm)", "0.1791 (4.55mm)", "0.18 (#15)", "0.1811 (4.60mm)", "0.182 (#14)", "0.1831 (4.65mm)", "0.185 (#13)", "0.187 (4.75mm)", "0.1875 (3/16)", "0.189 (#12)", "0.1909 (4.85mm)", "0.191 (#11)", "0.1929 (4.90mm)", "0.1935 (#10)", "0.1949 (4.95mm)", "0.196 (#9)", "0.1969 (5.00mm)", "0.1988 (5.05mm)", "0.199 (#8)", "0.2008 (5.10mm)", "0.201 (#7)", "0.2028 (5.15mm)", "0.2031 (13/64)", "0.204 (#6)", "0.2047 (5.20mm)", "0.2055 (#5)", "0.2067 (5.25mm)", "0.2087 (5.30mm)", "0.209 (#4)", "0.2106 (5.35mm)", "0.2126 (5.40mm)", "0.213 (#3)", "0.2146 (5.45mm)", "0.2165 (5.50mm)", "0.2185 (5.55mm)", "0.2188 (7/32)", "0.2205 (5.60mm)", "0.221 (#2)", "0.2224 (5.65mm)", "0.2244 (5.70mm)", "0.2264 (5.75mm)", "0.228 (#1)", "0.2283 (5.80mm)", "0.2303 (5.85mm)", "0.2323 (5.90mm)", "0.234 (A)", "0.2343 (5.95mm)", "0.2344 (15/64)", "0.2362 (6.00mm)", "0.238 (B)", "0.2382 (6.05mm)", "0.2402 (6.10mm)", "0.242 (C)", "0.2421 (6.15mm)", "0.2441 (6.20mm)", "0.246 (D)", "0.2461 (6.25mm)", "0.248 (6.30mm)", "0.25 (6.35mm)"],
+  metric_sizes: ["0.0991 (0.10mm / 0.0039in)", "0.1295 (0.13mm / 0.0051in)", "0.1499 (0.15mm / 0.0059in)", "0.16 (#96 / 0.0063in)", "0.1702 (#95 / 0.0067in)", "0.1803 (#94 / 0.0071in)", "0.1905 (#93 / 0.0075in)", "0.2007 (0.20mm / 0.0079in)", "0.2108 (#91 / 0.0083in)", "0.221 (#90 / 0.0087in)", "0.2311 (#89 / 0.0091in)", "0.2413 (#88 / 0.0095in)", "0.2489 (0.25mm / 0.0098in)", "0.254 (#87 / 0.01in)", "0.2667 (#86 / 0.0105in)", "0.2794 (#85 / 0.011in)", "0.2921 (#84 / 0.0115in)", "0.2997 (0.30mm / 0.0118in)", "0.3048 (#83 / 0.012in)", "0.3175 (#82 / 0.0125in)", "0.3302 (#81 / 0.013in)", "0.3429 (#80 / 0.0135in)", "0.3505 (0.35mm / 0.0138in)", "0.3683 (#79 / 0.0145in)", "0.3962 (1/64 / 0.0156in)", "0.3988 (0.40mm / 0.0157in)", "0.4064 (#78 / 0.016in)", "0.4496 (0.45mm / 0.0177in)", "0.4572 (#77 / 0.018in)", "0.5004 (0.50mm / 0.0197in)", "0.508 (#76 / 0.02in)", "0.5334 (#75 / 0.021in)", "0.5512 (0.55mm / 0.0217in)", "0.5715 (#74 / 0.0225in)", "0.5994 (0.60mm / 0.0236in)", "0.6096 (#73 / 0.024in)", "0.635 (#72 / 0.025in)", "0.6502 (0.65mm / 0.0256in)", "0.6604 (#71 / 0.026in)", "0.701 (0.70mm / 0.0276in)", "0.7112 (#70 / 0.028in)", "0.7417 (#69 / 0.0292in)", "0.7493 (0.75mm / 0.0295in)", "0.7874 (#68 / 0.031in)", "0.7925 (1/32 / 0.0312in)", "0.8001 (0.80mm / 0.0315in)", "0.8128 (#67 / 0.032in)", "0.8382 (#66 / 0.033in)", "0.8509 (0.85mm / 0.0335in)", "0.889 (#65 / 0.035in)", "0.8992 (0.90mm / 0.0354in)", "0.9144 (#64 / 0.036in)", "0.9398 (#63 / 0.037in)", "0.95 (0.95mm / 0.0374in)", "0.9652 (#62 / 0.038in)", "0.9906 (#61 / 0.039in)", "1.0008 (1.00mm / 0.0394in)", "1.016 (#60 / 0.04in)", "1.0414 (#59 / 0.041in)", "1.049 (1.05mm / 0.0413in)", "1.0668 (#58 / 0.042in)", "1.0922 (#57 / 0.043in)", "1.0998 (1.10mm / 0.0433in)", "1.1201 (1.12mm / 0.0441in)", "1.1506 (1.15mm / 0.0453in)", "1.1811 (#56 / 0.0465in)", "1.1913 (3/64 / 0.0469in)", "1.1989 (1.20mm / 0.0472in)", "1.2497 (1.25mm / 0.0492in)", "1.3005 (1.30mm / 0.0512in)", "1.3208 (#55 / 0.052in)", "1.3487 (1.35mm / 0.0531in)", "1.397 (#54 / 0.055in)", "1.3995 (1.40mm / 0.0551in)", "1.4503 (1.45mm / 0.0571in)", "1.5011 (1.50mm / 0.0591in)", "1.5113 (#53 / 0.0595in)", "1.5494 (1.55mm / 0.061in)", "1.5875 (1/16 / 0.0625in)", "1.6002 (1.60mm / 0.063in)", "1.6129 (#52 / 0.0635in)", "1.651 (1.65mm / 0.065in)", "1.6993 (1.70mm / 0.0669in)", "1.7018 (#51 / 0.067in)", "1.7501 (1.75mm / 0.0689in)", "1.778 (#50 / 0.07in)", "1.8009 (1.80mm / 0.0709in)", "1.8491 (1.85mm / 0.0728in)", "1.8542 (#49 / 0.073in)", "1.8999 (1.90mm / 0.0748in)", "1.9304 (#48 / 0.076in)", "1.9507 (1.95mm / 0.0768in)", "1.9837 (5/64 / 0.0781in)", "1.9939 (#47 / 0.0785in)", "1.999 (2.00mm / 0.0787in)", "2.0498 (2.05mm / 0.0807in)", "2.0574 (#46 / 0.081in)", "2.0828 (#45 / 0.082in)", "2.1006 (2.10mm / 0.0827in)", "2.1488 (2.15mm / 0.0846in)", "2.1844 (#44 / 0.086in)", "2.1996 (2.20mm / 0.0866in)", "2.2504 (2.25mm / 0.0886in)", "2.2606 (#43 / 0.089in)", "2.3012 (2.30mm / 0.0906in)", "2.3495 (2.35mm / 0.0925in)", "2.3749 (#42 / 0.0935in)", "2.3825 (3/32 / 0.0938in)", "2.4003 (2.40mm / 0.0945in)", "2.4384 (#41 / 0.096in)", "2.4511 (2.45mm / 0.0965in)", "2.4892 (#40 / 0.098in)", "2.4994 (2.50mm / 0.0984in)", "2.5273 (#39 / 0.0995in)", "2.5502 (2.55mm / 0.1004in)", "2.5781 (#38 / 0.1015in)", "2.601 (2.60mm / 0.1024in)", "2.6416 (#37 / 0.104in)", "2.6492 (2.65mm / 0.1043in)", "2.7 (2.70mm / 0.1063in)", "2.7051 (#36 / 0.1065in)", "2.7508 (2.75mm / 0.1083in)", "2.7788 (7/64 / 0.1094in)", "2.794 (#35 / 0.11in)", "2.7991 (2.80mm / 0.1102in)", "2.8194 (#34 / 0.111in)", "2.8499 (2.85mm / 0.1122in)", "2.8702 (#33 / 0.113in)", "2.9007 (2.90mm / 0.1142in)", "2.9464 (#32 / 0.116in)", "2.9489 (2.95mm / 0.1161in)", "2.9997 (3.00mm / 0.1181in)", "3.048 (#31 / 0.12in)", "3.0505 (3.05mm / 0.1201in)", "3.0988 (3.10mm / 0.122in)", "3.1496 (3.15mm / 0.124in)", "3.175 (1/8 / 0.125in)", "3.2004 (3.20mm / 0.126in)", "3.2512 (3.25mm / 0.128in)", "3.2639 (#30 / 0.1285in)", "3.2995 (3.30mm / 0.1299in)", "3.3503 (3.35mm / 0.1319in)", "3.4011 (3.40mm / 0.1339in)", "3.4493 (3.45mm / 0.1358in)", "3.4544 (#29 / 0.136in)", "3.5001 (3.50mm / 0.1378in)", "3.5509 (3.55mm / 0.1398in)", "3.5687 (#28 / 0.1405in)", "3.5712 (9/64 / 0.1406in)", "3.5992 (3.60mm / 0.1417in)", "3.65 (3.65mm / 0.1437in)", "3.6576 (#27 / 0.144in)", "3.7008 (3.70mm / 0.1457in)", "3.7338 (#26 / 0.147in)", "3.749 (3.75mm / 0.1476in)", "3.7973 (#25 / 0.1495in)", "3.7998 (3.80mm / 0.1496in)", "3.8506 (3.85mm / 0.1516in)", "3.8608 (#24 / 0.152in)", "3.8989 (3.90mm / 0.1535in)", "3.9116 (#23 / 0.154in)", "3.9497 (3.95mm / 0.1555in)", "3.9675 (5/32 / 0.1562in)", "3.9878 (#22 / 0.157in)", "4.0005 (4.00mm / 0.1575in)", "4.0386 (#21 / 0.159in)", "4.0488 (4.05mm / 0.1594in)", "4.0894 (#20 / 0.161in)", "4.0996 (4.10mm / 0.1614in)", "4.1504 (4.15mm / 0.1634in)", "4.2012 (4.20mm / 0.1654in)", "4.2164 (#19 / 0.166in)", "4.2494 (4.25mm / 0.1673in)", "4.3002 (4.30mm / 0.1693in)", "4.3053 (#18 / 0.1695in)", "4.351 (4.35mm / 0.1713in)", "4.3663 (11/64 / 0.1719in)", "4.3942 (#17 / 0.173in)", "4.3993 (4.40mm / 0.1732in)", "4.4501 (4.45mm / 0.1752in)", "4.4958 (#16 / 0.177in)", "4.5009 (4.50mm / 0.1772in)", "4.5491 (4.55mm / 0.1791in)", "4.572 (#15 / 0.18in)", "4.5999 (4.60mm / 0.1811in)", "4.6228 (#14 / 0.182in)", "4.6507 (4.65mm / 0.1831in)", "4.699 (#13 / 0.185in)", "4.7498 (4.75mm / 0.187in)", "4.7625 (3/16 / 0.1875in)", "4.8006 (#12 / 0.189in)", "4.8489 (4.85mm / 0.1909in)", "4.8514 (#11 / 0.191in)", "4.8997 (4.90mm / 0.1929in)", "4.9149 (#10 / 0.1935in)", "4.9505 (4.95mm / 0.1949in)", "4.9784 (#9 / 0.196in)", "5.0013 (5.00mm / 0.1969in)", "5.0495 (5.05mm / 0.1988in)", "5.0546 (#8 / 0.199in)", "5.1003 (5.10mm / 0.2008in)", "5.1054 (#7 / 0.201in)", "5.1511 (5.15mm / 0.2028in)", "5.1587 (13/64 / 0.2031in)", "5.1816 (#6 / 0.204in)", "5.1994 (5.20mm / 0.2047in)", "5.2197 (#5 / 0.2055in)", "5.2502 (5.25mm / 0.2067in)", "5.301 (5.30mm / 0.2087in)", "5.3086 (#4 / 0.209in)", "5.3492 (5.35mm / 0.2106in)", "5.4 (5.40mm / 0.2126in)", "5.4102 (#3 / 0.213in)", "5.4508 (5.45mm / 0.2146in)", "5.4991 (5.50mm / 0.2165in)", "5.5499 (5.55mm / 0.2185in)", "5.5575 (7/32 / 0.2188in)", "5.6007 (5.60mm / 0.2205in)", "5.6134 (#2 / 0.221in)", "5.649 (5.65mm / 0.2224in)", "5.6998 (5.70mm / 0.2244in)", "5.7506 (5.75mm / 0.2264in)", "5.7912 (#1 / 0.228in)", "5.7988 (5.80mm / 0.2283in)", "5.8496 (5.85mm / 0.2303in)", "5.9004 (5.90mm / 0.2323in)", "5.9436 (A / 0.234in)", "5.9512 (5.95mm / 0.2343in)", "5.9538 (15/64 / 0.2344in)", "5.9995 (6.00mm / 0.2362in)", "6.0452 (B / 0.238in)", "6.0503 (6.05mm / 0.2382in)", "6.1011 (6.10mm / 0.2402in)", "6.1468 (C / 0.242in)", "6.1493 (6.15mm / 0.2421in)", "6.2001 (6.20mm / 0.2441in)", "6.2484 (D / 0.246in)", "6.2509 (6.25mm / 0.2461in)", "6.2992 (6.30mm / 0.248in)", "6.35 (6.35mm / 0.25in)"]
+};
+
+</script>
+<script>
+/* --- Embedded templates.js --- */
+/**
+ * TCT Feeds & Speeds Calculator - Adaptive Component Templates (Approach 2, Variant 4A)
+ * Client-side Device Branching Templates for Static Hosting (GitHub Pages)
+ */
+
+window.AppTemplates = {
+    /**
+     * Renders Mobile-Optimized Card-Based Summary Deck (No horizontal table squeezing)
+     */
+    renderMobileSummary(data, unitSystem = 'imperial') {
+        const el = document.createElement('div');
+        el.className = 'adaptive-mobile-cards';
+        el.setAttribute('data-component', 'mobile-summary-cards');
+
+        if (!data || !data.rows || data.rows.length === 0) {
+            el.innerHTML = `
+                <div class="mobile-empty-card">
+                    <p>Enter parameters above to view calculated machine specifications.</p>
+                </div>
+            `;
+            return el;
+        }
+
+        const isMetric = (unitSystem === 'metric' || (data.unitSystem === 'metric'));
+
+        let currentSection = "Setup Parameters";
+        let sections = {};
+
+        data.rows.forEach(item => {
+            if (item.isDivider) {
+                currentSection = item.title;
+                sections[currentSection] = [];
+            } else {
+                if (!sections[currentSection]) sections[currentSection] = [];
+                sections[currentSection].push(item);
+            }
+        });
+
+        let html = '';
+        for (const [sectionTitle, items] of Object.entries(sections)) {
+            html += `
+                <div class="adaptive-card-group">
+                    <div class="adaptive-card-group-header">
+                        <span class="group-dot"></span>
+                        <h4>${sectionTitle}</h4>
+                    </div>
+                    <div class="adaptive-card-items">
+            `;
+
+            items.forEach(item => {
+                const isHighlight = isMetric
+                    ? (item.met.includes('m/min') || item.met.includes('krpm'))
+                    : (item.imp.includes('IPM') || item.imp.includes('krpm'));
+                const primaryVal = isMetric ? item.met : item.imp;
+                const secondaryVal = isMetric ? item.imp : item.met;
+
+                html += `
+                    <div class="adaptive-item-card ${isHighlight ? 'item-highlight' : ''}">
+                        <div class="item-card-label">${item.param}</div>
+                        <div class="item-card-values">
+                            <div class="val-primary">${primaryVal}</div>
+                            <div class="val-secondary">${secondaryVal}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+        }
+
+        el.innerHTML = html;
+        return el;
+    },
+
+    /**
+     * Renders Mobile Bottom Fixed Navigation & Action Dock
+     */
+    renderMobileBottomDock(handlers) {
+        const el = document.createElement('nav');
+        el.className = 'adaptive-mobile-bottom-dock';
+        el.setAttribute('data-component', 'mobile-bottom-dock');
+        el.setAttribute('aria-label', 'Mobile Quick Actions');
+
+        el.innerHTML = `
+            <button type="button" class="mobile-dock-btn dock-btn-calc" id="mob-btn-calc" title="Recalculate">
+                <span class="dock-icon">⚡</span>
+                <span class="dock-label">Calculate</span>
+            </button>
+            <button type="button" class="mobile-dock-btn" id="mob-btn-copy" title="Copy Image to Clipboard">
+                <span class="dock-icon">📷</span>
+                <span class="dock-label">Copy Image</span>
+            </button>
+            <button type="button" class="mobile-dock-btn" id="mob-btn-export" title="Export CSV">
+                <span class="dock-icon">📄</span>
+                <span class="dock-label">Export CSV</span>
+            </button>
+            <button type="button" class="mobile-dock-btn" id="mob-btn-reset" title="Reset Inputs">
+                <span class="dock-icon">🔄</span>
+                <span class="dock-label">Reset</span>
+            </button>
+        `;
+
+        // Wire handlers
+        setTimeout(() => {
+            const btnCalc = el.querySelector('#mob-btn-calc');
+            const btnCopy = el.querySelector('#mob-btn-copy');
+            const btnExport = el.querySelector('#mob-btn-export');
+            const btnReset = el.querySelector('#mob-btn-reset');
+
+            if (btnCalc && handlers.onCalc) btnCalc.addEventListener('click', handlers.onCalc);
+            if (btnCopy && handlers.onCopy) btnCopy.addEventListener('click', handlers.onCopy);
+            if (btnExport && handlers.onExport) btnExport.addEventListener('click', handlers.onExport);
+            if (btnReset && handlers.onReset) btnReset.addEventListener('click', handlers.onReset);
+        }, 0);
+
+        return el;
+    }
+};
+
+</script>
+<script>
+/* --- Embedded script.js --- */
+/**
+ * TCT Feeds & Speeds Calculator - Enhanced Application Engine
+ * Precision PCB & Micro-Machining Speeds & Feeds Logic
+ */
+
+// --- Adaptive Device Detection & Client-Side Branching (Approach 2, Variant 4A) ---
+function debounce(fn, wait) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+    };
+}
+
+function detectDevice() {
+    const width = window.innerWidth;
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
+}
+
+function applyDeviceDataset() {
+    const device = detectDevice();
+    document.documentElement.dataset.device = device;
+    if (document.body) {
+        document.body.dataset.touch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'true' : 'false';
+    }
+    return device;
+}
+
+let lastCalculationData = { rows: [] };
+
+function mountAdaptiveViews() {
+    const device = applyDeviceDataset();
+    const summaryMount = document.querySelector('[data-mount="adaptive-summary"]');
+    const mobileDockMount = document.querySelector('[data-mount="mobile-dock"]');
+
+    if (device === 'mobile' && window.AppTemplates) {
+        if (summaryMount) {
+            summaryMount.innerHTML = '';
+            summaryMount.appendChild(window.AppTemplates.renderMobileSummary(lastCalculationData, currentUnitSystem));
+        }
+        if (mobileDockMount && !mobileDockMount.hasChildNodes()) {
+            mobileDockMount.appendChild(window.AppTemplates.renderMobileBottomDock({
+                onCalc: () => calculateAll(false),
+                onCopy: () => copyTableToClipboard('rev'),
+                onExport: () => exportTableCSV('rev'),
+                onReset: () => resetPanelWithUndo('rev')
+            }));
+        }
+    } else {
+        if (summaryMount) summaryMount.innerHTML = '';
+        if (mobileDockMount) mobileDockMount.innerHTML = '';
+    }
+}
+
+// Initial run
+let currentDevice = applyDeviceDataset();
+
+// Re-check on breakpoint crossings and window resize (debounced per 4A spec)
+window.addEventListener('resize', debounce(() => {
+    const next = detectDevice();
+    if (next !== currentDevice) {
+        currentDevice = next;
+        mountAdaptiveViews();
+        document.dispatchEvent(new CustomEvent('devicechange', { detail: { device: next } }));
+    }
+}, 150));
+
+// --- Data & State ---
+let imperial_sizes = [];
+let metric_sizes = [];
+
+if (typeof sizesData !== 'undefined') {
+    imperial_sizes = sizesData.imperial_sizes || [];
+    metric_sizes = sizesData.metric_sizes || [];
+}
+
+const MATERIAL_PRESETS = {
+    "FR4": { name: "FR4 (Standard PCB)", sfm: 400.0, fz_mil: 0.50 },
+    "High Speed Digital": { name: "High Speed Digital (Megtron/Rogers)", sfm: 200.0, fz_mil: 0.50 },
+    "Polyimide": { name: "Polyimide (Flex PCB / Rigid-Flex)", sfm: 200.0, fz_mil: 0.50 },
+    "Teflon": { name: "Teflon (PTFE / RF High Frequency)", sfm: 200.0, fz_mil: 0.90 },
+    "Custom": { name: "Custom / Manual Entry", sfm: 200.0, fz_mil: 0.50 }
+};
+
+let currentUnitSystem = localStorage.getItem('tct_unit_system') || 'imperial';
+let currentWorkflowMode = localStorage.getItem('tct_workflow_mode') || 'compare-clean';
+let undoCache = {
+    rev: null,
+    fwd: null
+};
+
+// --- Mathematical Engineering Engine ---
+class MachiningMathEngine {
+    static parseDiameter(diaStr) {
+        if (!diaStr) return 0.0098;
+        const cleanStr = diaStr.trim().split(" ")[0];
+        if (cleanStr.includes('/')) {
+            const [num, den] = cleanStr.split('/');
+            const val = parseFloat(num) / parseFloat(den);
+            return isNaN(val) ? 0.0098 : val;
+        }
+        const val = parseFloat(cleanStr);
+        return isNaN(val) ? 0.0098 : val;
+    }
+
+    static calcForward(dia_in, rpm, ipm, flutes) {
+        const sfm = (Math.PI * dia_in * rpm) / 12.0;
+        const ipt = (rpm * flutes) > 0 ? ipm / (rpm * flutes) : 0.0;
+        
+        const area_in = (Math.PI * Math.pow(dia_in, 2)) / 4.0;
+        const mrr_imp = area_in * ipm; // in³/min
+        
+        const dia_mm = dia_in * 25.4;
+        const ipm_mm = ipm * 25.4;
+        const area_mm = (Math.PI * Math.pow(dia_mm, 2)) / 4.0;
+        const mrr_met = (area_mm * ipm_mm) / 1000.0; // cm³/min
+        
+        const vc_mmin = sfm * 0.3048;
+        const fr_mmin = ipm * 0.0254;
+        const fr_mms = ipm * 0.4233;
+        const fz_mil = ipt * 1000.0;
+        const fz_um = ipt * 25400.0;
+        
+        return {
+            sfm,
+            vc_mmin,
+            ipt,
+            fz_mil,
+            fz_um,
+            krpm: rpm / 1000.0,
+            rpm,
+            ipm,
+            fr_mmin,
+            fr_mms,
+            mrr_imp,
+            mrr_met,
+            dia_in,
+            dia_mm
+        };
+    }
+
+    static calcReverse(dia_in, sfm_target, ipt_target, flutes, max_rpm = 0.0, min_rpm = 0.0) {
+        const rpm_theoretical = dia_in > 0 ? (sfm_target * 12.0) / (Math.PI * dia_in) : 0.0;
+        
+        let capped = false;
+        let cap_type = null;
+        let rpm = rpm_theoretical;
+        if (max_rpm > 0.0 && rpm > max_rpm) {
+            rpm = max_rpm;
+            capped = true;
+            cap_type = 'max';
+        } else if (min_rpm > 0.0 && rpm < min_rpm) {
+            rpm = min_rpm;
+            capped = true;
+            cap_type = 'min';
+        }
+            
+        const ipm = rpm * ipt_target * flutes;
+        const sfm_achieved = (Math.PI * dia_in * rpm) / 12.0;
+        
+        const area_in = (Math.PI * Math.pow(dia_in, 2)) / 4.0;
+        const mrr_imp = area_in * ipm;
+        
+        const dia_mm = dia_in * 25.4;
+        const ipm_mm = ipm * 25.4;
+        const area_mm = (Math.PI * Math.pow(dia_mm, 2)) / 4.0;
+        const mrr_met = (area_mm * ipm_mm) / 1000.0;
+        
+        const vc_mmin = sfm_target * 0.3048;
+        const vc_achieved_mmin = sfm_achieved * 0.3048;
+        const fr_mmin = ipm * 0.0254;
+        const fr_mms = ipm * 0.4233;
+        const fz_mil = ipt_target * 1000.0;
+        const fz_um = ipt_target * 25400.0;
+        
+        return {
+            rpm,
+            rpm_theoretical,
+            krpm: rpm / 1000.0,
+            krpm_theoretical: rpm_theoretical / 1000.0,
+            ipm,
+            fr_mmin,
+            fr_mms,
+            sfm_target,
+            sfm_achieved,
+            vc_mmin,
+            vc_achieved_mmin,
+            ipt_target,
+            fz_mil,
+            fz_um,
+            mrr_imp,
+            mrr_met,
+            capped,
+            cap_type,
+            dia_in,
+            dia_mm
+        };
+    }
+}
+
+// --- Searchable CSV Autocomplete Input Component (Specification: searchable_csv_input_pyside6.md) ---
+class SearchableCsvInput {
+    constructor({ inputEl, toggleEl, popupEl, listEl, getValuesFn, placeholder = "Type or select size...", maxResults = 100, onSelect, onInput }) {
+        this.input = inputEl;
+        this.toggle = toggleEl;
+        this.popup = popupEl;
+        this.list = listEl;
+        this.getValues = getValuesFn;
+        this.placeholder = placeholder;
+        this.maxResults = maxResults;
+        this.onSelect = onSelect || (() => {});
+        this.onInput = onInput || (() => {});
+        
+        this.customValue = false;
+        this.selectedIndex = -1;
+        this.currentItems = [];
+
+        this.init();
+    }
+
+    init() {
+        if (this.placeholder) this.input.setAttribute('placeholder', this.placeholder);
+        
+        // Input typing listener
+        this.input.addEventListener('input', () => {
+            this.onTextChanged(this.input.value);
+            this.onInput(this.input.value);
+        });
+        
+        // Keydown navigation: Up, Down, Enter, Escape
+        this.input.addEventListener('keydown', (e) => this.onKeyDown(e));
+        
+        // Focus handler
+        this.input.addEventListener('focus', () => {
+            this.input.select();
+            if (this.input.value.trim()) {
+                this.onTextChanged(this.input.value);
+            }
+        });
+
+        // Toggle button click
+        if (this.toggle) {
+            this.toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.isPopupVisible()) {
+                    this.hidePopup();
+                } else {
+                    this.showAllOptions();
+                    this.input.focus();
+                }
+            });
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!this.input.contains(e.target) && !this.popup.contains(e.target) && (!this.toggle || !this.toggle.contains(e.target))) {
+                this.hidePopup();
+            }
+        });
+    }
+
+    getValuesList() {
+        return typeof this.getValues === 'function' ? this.getValues() : (this.getValues || []);
+    }
+
+    onTextChanged(text) {
+        text = text.trim();
+        if (!text) {
+            this.showAllOptions();
+            return;
+        }
+
+        const search = text.toLowerCase();
+        const allValues = this.getValuesList();
+        
+        // Substring matching across label & size
+        const matches = allValues.filter(val => val.toLowerCase().includes(search)).slice(0, this.maxResults);
+
+        this.renderItems(matches, text);
+        this.showPopup();
+    }
+
+    showAllOptions() {
+        const allValues = this.getValuesList().slice(0, this.maxResults);
+        this.renderItems(allValues, "");
+        this.showPopup();
+    }
+
+    renderItems(matches, searchText) {
+        this.list.innerHTML = '';
+        this.currentItems = [];
+        this.selectedIndex = matches.length > 0 ? 0 : -1;
+
+        if (matches.length > 0) {
+            matches.forEach((val, idx) => {
+                const li = document.createElement('li');
+                li.className = 'searchable-item' + (idx === 0 ? ' active' : '') + (val === this.input.value.trim() ? ' selected' : '');
+                li.setAttribute('role', 'option');
+                li.dataset.index = idx;
+                li.dataset.value = val;
+
+                // Highlight matching substring
+                if (searchText) {
+                    const regex = new RegExp(`(${this.escapeRegex(searchText)})`, 'gi');
+                    li.innerHTML = `<span>${val.replace(regex, '<mark class="match-hl">$1</mark>')}</span><span class="item-badge">Standard</span>`;
+                } else {
+                    li.innerHTML = `<span>${val}</span><span class="item-badge">Standard</span>`;
+                }
+
+                li.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    this.selectItem(val, false);
+                });
+
+                this.list.appendChild(li);
+                this.currentItems.push({ value: val, isCustom: false, el: li });
+            });
+        }
+
+        // Custom Option item if text is not in matches
+        if (searchText && !matches.includes(searchText)) {
+            const customLi = document.createElement('li');
+            customLi.className = 'searchable-item custom-item' + (matches.length === 0 ? ' active' : '');
+            customLi.setAttribute('role', 'option');
+            customLi.dataset.custom = 'true';
+            customLi.dataset.value = searchText;
+            customLi.innerHTML = `<span>✨ Use "<strong>${searchText}</strong>" as custom value</span><span class="item-badge">Custom</span>`;
+            
+            customLi.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.selectItem(searchText, true);
+            });
+
+            this.list.appendChild(customLi);
+            this.currentItems.push({ value: searchText, isCustom: true, el: customLi });
+            if (matches.length === 0) this.selectedIndex = 0;
+        }
+
+        if (this.currentItems.length === 0) {
+            const empty = document.createElement('li');
+            empty.className = 'searchable-empty';
+            empty.textContent = 'No matching sizes found';
+            this.list.appendChild(empty);
+        }
+    }
+
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    showPopup() {
+        if (this.currentItems.length === 0) return;
+        this.popup.style.display = 'block';
+        if (this.toggle) this.toggle.classList.add('open');
+        this.updateActiveItem();
+    }
+
+    hidePopup() {
+        this.popup.style.display = 'none';
+        if (this.toggle) this.toggle.classList.remove('open');
+        this.checkValue();
+    }
+
+    isPopupVisible() {
+        return this.popup.style.display !== 'none';
+    }
+
+    onKeyDown(e) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!this.isPopupVisible()) {
+                this.showAllOptions();
+            } else if (this.currentItems.length > 0) {
+                this.selectedIndex = (this.selectedIndex + 1) % this.currentItems.length;
+                this.updateActiveItem();
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (this.isPopupVisible() && this.currentItems.length > 0) {
+                this.selectedIndex = (this.selectedIndex - 1 + this.currentItems.length) % this.currentItems.length;
+                this.updateActiveItem();
+            }
+        } else if (e.key === 'Enter') {
+            if (this.isPopupVisible() && this.selectedIndex >= 0 && this.selectedIndex < this.currentItems.length) {
+                e.preventDefault();
+                const selected = this.currentItems[this.selectedIndex];
+                this.selectItem(selected.value, selected.isCustom);
+            } else {
+                this.checkValue();
+                this.hidePopup();
+                this.onSelect(this.input.value.trim(), this.customValue);
+            }
+        } else if (e.key === 'Escape') {
+            this.hidePopup();
+        } else if (e.key === 'Tab') {
+            this.hidePopup();
+        }
+    }
+
+    updateActiveItem() {
+        this.currentItems.forEach((item, idx) => {
+            if (idx === this.selectedIndex) {
+                item.el.classList.add('active');
+                item.el.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.el.classList.remove('active');
+            }
+        });
+    }
+
+    selectItem(value, isCustom) {
+        this.customValue = isCustom;
+        this.input.value = value;
+        this.hidePopup();
+        this.onSelect(value, isCustom);
+    }
+
+    checkValue() {
+        const val = this.input.value.trim();
+        if (!val) {
+            this.customValue = false;
+            return;
+        }
+        const all = this.getValuesList();
+        this.customValue = !all.includes(val);
+    }
+
+    value() {
+        return this.input.value.trim();
+    }
+
+    is_custom() {
+        this.checkValue();
+        return this.customValue;
+    }
+
+    setValue(value, isCustom = null) {
+        this.input.value = value;
+        if (isCustom !== null) {
+            this.customValue = isCustom;
+        } else {
+            this.checkValue();
+        }
+    }
+}
+
+// Global searchable input instances
+let revDiaSearch = null;
+let fwdDiaSearch = null;
+
+// --- DOM Handles ---
+const els = {
+    // Recommend Panel (Reverse)
+    rev: {
+        panel: document.getElementById('panel-recommend'),
+        materialRow: document.getElementById('row-rev-material'),
+        dia: document.getElementById('rev-dia'),
+        diaToggle: document.getElementById('rev-dia-toggle'),
+        diaPopup: document.getElementById('rev-dia-popup'),
+        diaList: document.getElementById('rev-dia-list'),
+        diaUnit: document.getElementById('rev-dia-unit'),
+        material: document.getElementById('rev-material'),
+        vc: document.getElementById('rev-vc'),
+        vcUnit: document.getElementById('rev-vc-unit'),
+        fz: document.getElementById('rev-fz'),
+        fzUnit: document.getElementById('rev-fz-unit'),
+        flutes: document.getElementById('rev-flutes'),
+        minRpm: document.getElementById('rev-min-rpm'),
+        maxRpm: document.getElementById('rev-max-rpm'),
+        advBadge: document.getElementById('rev-adv-badge'),
+        cappingCallout: document.getElementById('callout-rev-capping'),
+        cappingDesc: document.getElementById('capping-callout-desc'),
+        cappingMetrics: document.getElementById('capping-metrics'),
+        kpiKrpm: document.getElementById('kpi-rev-krpm'),
+        kpiKrpmUnit: document.getElementById('kpi-rev-krpm-unit'),
+        kpiRpmSub: document.getElementById('kpi-rev-rpm-sub'),
+        kpiFr: document.getElementById('kpi-rev-fr'),
+        kpiFrUnit: document.getElementById('kpi-rev-fr-unit'),
+        kpiFrSub: document.getElementById('kpi-rev-fr-sub'),
+        kpiMrr: document.getElementById('kpi-rev-mrr'),
+        kpiMrrUnit: document.getElementById('kpi-rev-mrr-unit'),
+        kpiMrrSub: document.getElementById('kpi-rev-mrr-sub'),
+        tableBody: document.querySelector('#table-rev tbody'),
+        btnCalc: document.getElementById('btn-rev-calc'),
+        btnCopy: document.getElementById('btn-rev-copy'),
+        btnExport: document.getElementById('btn-rev-export'),
+        btnReset: document.getElementById('btn-rev-reset')
+    },
+    // Verify Panel (Forward)
+    fwd: {
+        panel: document.getElementById('panel-verify'),
+        dia: document.getElementById('fwd-dia'),
+        diaToggle: document.getElementById('fwd-dia-toggle'),
+        diaPopup: document.getElementById('fwd-dia-popup'),
+        diaList: document.getElementById('fwd-dia-list'),
+        diaUnit: document.getElementById('fwd-dia-unit'),
+        fr: document.getElementById('fwd-fr'),
+        frUnit: document.getElementById('fwd-fr-unit'),
+        krpm: document.getElementById('fwd-krpm'),
+        flutes: document.getElementById('fwd-flutes'),
+        advBadge: document.getElementById('fwd-adv-badge'),
+        kpiVc: document.getElementById('kpi-fwd-vc'),
+        kpiVcUnit: document.getElementById('kpi-fwd-vc-unit'),
+        kpiVcSub: document.getElementById('kpi-fwd-vc-sub'),
+        kpiFz: document.getElementById('kpi-fwd-fz'),
+        kpiFzUnit: document.getElementById('kpi-fwd-fz-unit'),
+        kpiFzSub: document.getElementById('kpi-fwd-fz-sub'),
+        kpiMrr: document.getElementById('kpi-fwd-mrr'),
+        kpiMrrUnit: document.getElementById('kpi-fwd-mrr-unit'),
+        kpiMrrSub: document.getElementById('kpi-fwd-mrr-sub'),
+        tableBody: document.querySelector('#table-fwd tbody'),
+        btnCalc: document.getElementById('btn-fwd-calc'),
+        btnCopy: document.getElementById('btn-fwd-copy'),
+        btnExport: document.getElementById('btn-fwd-export'),
+        btnReset: document.getElementById('btn-fwd-reset')
+    },
+    // Global Elements
+    panelsWrapper: document.getElementById('panels-wrapper'),
+    tabCompareClean: document.getElementById('tab-compare-clean'),
+    tabCompareMaterial: document.getElementById('tab-compare-material'),
+    tabRecommend: document.getElementById('tab-recommend'),
+    tabVerify: document.getElementById('tab-verify'),
+    btnImperial: document.getElementById('btn-unit-imperial'),
+    btnMetric: document.getElementById('btn-unit-metric'),
+    unitSliderCheckbox: document.getElementById('unit-slider-checkbox'),
+    sliderOptImperial: document.getElementById('slider-opt-imperial') || document.getElementById('slider-opt-inches'),
+    sliderOptMetric: document.getElementById('slider-opt-metric'),
+    themeToggle: document.getElementById('theme-toggle'),
+    themeIcon: document.getElementById('theme-icon'),
+    themeText: document.getElementById('theme-text'),
+    statusText: document.getElementById('status-text'),
+    toastContainer: document.getElementById('toast-container'),
+    shortcutsModal: document.getElementById('shortcuts-modal'),
+    btnOpenShortcuts: document.getElementById('btn-open-shortcuts'),
+    btnCloseShortcuts: document.getElementById('btn-close-shortcuts'),
+    syncStatus: document.getElementById('sync-status')
+};
+
+// --- Initialization ---
+function init() {
+    // 0. Sync responsive device & touch datasets
+    applyDeviceDataset();
+
+    // 1. Initialize Theme from storage or system preference
+    initTheme();
+
+    // 2. Initialize Searchable CSV Autocomplete Inputs
+    revDiaSearch = new SearchableCsvInput({
+        inputEl: els.rev.dia,
+        toggleEl: els.rev.diaToggle,
+        popupEl: els.rev.diaPopup,
+        listEl: els.rev.diaList,
+        getValuesFn: () => (els.rev.diaUnit.value === 'mm' ? metric_sizes : imperial_sizes),
+        placeholder: "Type or select size...",
+        onSelect: (val, isCustom) => {
+            if (fwdDiaSearch && fwdDiaSearch.value() !== val) {
+                fwdDiaSearch.setValue(val, isCustom);
+                triggerSyncBadge();
+            }
+            calculateAll(true);
+        },
+        onInput: (val) => {
+            if (fwdDiaSearch && fwdDiaSearch.value() !== val) {
+                fwdDiaSearch.setValue(val);
+            }
+            calculateAll(true);
+        }
+    });
+
+    if (els.fwd.dia) {
+        fwdDiaSearch = new SearchableCsvInput({
+            inputEl: els.fwd.dia,
+            toggleEl: els.fwd.diaToggle,
+            popupEl: els.fwd.diaPopup,
+            listEl: els.fwd.diaList,
+            getValuesFn: () => (els.fwd.diaUnit.value === 'mm' ? metric_sizes : imperial_sizes),
+            placeholder: "Type or select size...",
+            onSelect: (val, isCustom) => {
+                if (revDiaSearch && revDiaSearch.value() !== val) {
+                    revDiaSearch.setValue(val, isCustom);
+                    triggerSyncBadge();
+                }
+                calculateAll(true);
+            },
+            onInput: (val) => {
+                if (revDiaSearch && revDiaSearch.value() !== val) {
+                    revDiaSearch.setValue(val);
+                }
+                calculateAll(true);
+            }
+        });
+    }
+
+    // 3. Set Initial Defaults based on loaded unit preference
+    const isMetric = currentUnitSystem === 'metric';
+    const initialDia = isMetric ? "0.2489 (0.25mm / 0.0098in)" : "0.0098 (0.25mm)";
+    revDiaSearch.setValue(initialDia, false);
+    if (fwdDiaSearch) fwdDiaSearch.setValue(initialDia, false);
+
+    // 4. Setup Global Unit System
+    applyGlobalUnitSystem(currentUnitSystem, false);
+
+    // 5. Setup Workflow Mode
+    if (els.panelsWrapper && els.panelsWrapper.classList.contains('compare-mode')) {
+        setWorkflowMode(currentWorkflowMode, false);
+    }
+
+    // 6. Bind Event Listeners
+    setupEventListeners();
+
+    // 7. Initial Calculations
+    calculateAll(true);
+}
+
+// --- Diameter Conversion Helper ---
+function convertSearchableDiameter(searchInstance, fromUnit, toUnit) {
+    if (!searchInstance) return;
+    const val = searchInstance.value();
+    if (!val) return;
+
+    const fromList = fromUnit === 'mm' ? metric_sizes : imperial_sizes;
+    const toList = toUnit === 'mm' ? metric_sizes : imperial_sizes;
+
+    const idx = fromList.indexOf(val);
+    if (idx !== -1 && idx < toList.length) {
+        searchInstance.setValue(toList[idx], false);
+    } else {
+        const parsed = MachiningMathEngine.parseDiameter(val);
+        if (!isNaN(parsed) && parsed > 0) {
+            const converted = toUnit === 'mm' ? (parsed * 25.4).toFixed(4) : (parsed / 25.4).toFixed(4);
+            searchInstance.setValue(converted, true);
+        }
+    }
+}
+
+// --- Event Listeners Setup ---
+function setupEventListeners() {
+    // Cyclic 5-Tab-Stop Sequence Focus Handler
+    const tabStopElements = [
+        els.rev.dia,   // Stop 1: Tool Diameter
+        els.rev.fz,    // Stop 2: Chipload
+        els.rev.vc,    // Stop 3: Cutting Speed
+        els.fwd.fr,    // Stop 4: Feed Rate
+        els.fwd.krpm   // Stop 5: Spindle Speed
+    ];
+
+    // Select-all-on-focus for all numerical inputs
+    const selectOnFocus = (e) => {
+        if (e.target && typeof e.target.select === 'function') {
+            setTimeout(() => e.target.select(), 10);
+        }
+    };
+
+    [els.rev.fz, els.rev.vc, els.rev.flutes, els.rev.maxRpm,
+     els.fwd.fr, els.fwd.krpm, els.fwd.flutes].forEach(input => {
+        if (input) {
+            input.addEventListener('focus', selectOnFocus);
+        }
+    });
+
+    // Tool Diameter Unit Listeners
+    if (els.rev.diaUnit) {
+        els.rev.diaUnit.addEventListener('change', () => {
+            const toUnit = els.rev.diaUnit.value;
+            const system = toUnit === 'mm' ? 'metric' : 'imperial';
+            applyGlobalUnitSystem(system, true);
+        });
+    }
+
+    if (els.fwd.diaUnit) {
+        els.fwd.diaUnit.addEventListener('change', () => {
+            const toUnit = els.fwd.diaUnit.value;
+            const system = toUnit === 'mm' ? 'metric' : 'imperial';
+            applyGlobalUnitSystem(system, true);
+        });
+    }
+
+    // Recommend Panel Listeners
+    if (els.rev.material) els.rev.material.addEventListener('change', onMaterialSelect);
+    if (els.rev.vc) els.rev.vc.addEventListener('input', () => calculateReverse(true, true));
+    if (els.rev.vcUnit) els.rev.vcUnit.addEventListener('change', () => calculateReverse(true, true));
+    if (els.rev.fz) els.rev.fz.addEventListener('input', () => calculateReverse(true, true));
+    if (els.rev.fzUnit) els.rev.fzUnit.addEventListener('change', () => calculateReverse(true, true));
+    if (els.rev.flutes) els.rev.flutes.addEventListener('input', () => { updateAdvancedBadge('rev'); calculateReverse(true, true); });
+    if (els.rev.minRpm) els.rev.minRpm.addEventListener('input', () => calculateReverse(true, true));
+    if (els.rev.maxRpm) els.rev.maxRpm.addEventListener('input', () => calculateReverse(true, true));
+
+    if (els.rev.btnCalc) els.rev.btnCalc.addEventListener('click', () => calculateReverse(false, true));
+    if (els.rev.btnCopy) els.rev.btnCopy.addEventListener('click', () => copyTableToClipboard('rev'));
+    if (els.rev.btnExport) els.rev.btnExport.addEventListener('click', () => exportTableCSV('rev'));
+    if (els.rev.btnReset) els.rev.btnReset.addEventListener('click', () => resetPanelWithUndo('rev'));
+
+    // Verify Panel Listeners (Integrated in Left Panel)
+    if (els.fwd.fr) els.fwd.fr.addEventListener('input', () => calculateForward(true, true));
+    if (els.fwd.frUnit) els.fwd.frUnit.addEventListener('change', () => calculateForward(true, true));
+    if (els.fwd.krpm) els.fwd.krpm.addEventListener('input', () => calculateForward(true, true));
+    if (els.fwd.flutes) els.fwd.flutes.addEventListener('input', () => { updateAdvancedBadge('fwd'); calculateForward(true, true); });
+
+    if (els.fwd.btnCalc) els.fwd.btnCalc.addEventListener('click', () => calculateForward(false, true));
+    if (els.fwd.btnCopy) els.fwd.btnCopy.addEventListener('click', () => copyTableToClipboard('fwd'));
+    if (els.fwd.btnExport) els.fwd.btnExport.addEventListener('click', () => exportTableCSV('fwd'));
+    if (els.fwd.btnReset) els.fwd.btnReset.addEventListener('click', () => resetPanelWithUndo('fwd'));
+
+    // Workflow Mode Tabs
+    if (els.tabCompareClean) els.tabCompareClean.addEventListener('click', () => setWorkflowMode('compare-clean'));
+    if (els.tabCompareMaterial) els.tabCompareMaterial.addEventListener('click', () => setWorkflowMode('compare-material'));
+    if (els.tabRecommend) els.tabRecommend.addEventListener('click', () => setWorkflowMode('recommend'));
+    if (els.tabVerify) els.tabVerify.addEventListener('click', () => setWorkflowMode('verify'));
+
+    // Global Unit Switches (Slider & Buttons)
+    if (els.unitSliderCheckbox) {
+        els.unitSliderCheckbox.addEventListener('change', () => {
+            const system = els.unitSliderCheckbox.checked ? 'metric' : 'imperial';
+            applyGlobalUnitSystem(system, true);
+        });
+    }
+    if (els.sliderOptImperial) {
+        els.sliderOptImperial.addEventListener('click', (e) => {
+            e.preventDefault();
+            applyGlobalUnitSystem('imperial', true);
+        });
+    }
+    if (els.sliderOptMetric) {
+        els.sliderOptMetric.addEventListener('click', (e) => {
+            e.preventDefault();
+            applyGlobalUnitSystem('metric', true);
+        });
+    }
+    if (els.btnImperial) els.btnImperial.addEventListener('click', () => applyGlobalUnitSystem('imperial'));
+    if (els.btnMetric) els.btnMetric.addEventListener('click', () => applyGlobalUnitSystem('metric'));
+
+    // Theme Toggle
+    els.themeToggle.addEventListener('click', toggleTheme);
+
+    // Shortcuts Modal
+    els.btnOpenShortcuts.addEventListener('click', () => openShortcutsModal(true));
+    els.btnCloseShortcuts.addEventListener('click', () => openShortcutsModal(false));
+    els.shortcutsModal.addEventListener('click', (e) => {
+        if (e.target === els.shortcutsModal) openShortcutsModal(false);
+    });
+
+    // Global Keyboard Shortcuts
+    document.addEventListener('keydown', handleGlobalKeydown);
+
+    // 5-Tab-Stop Navigation Loop:
+    // 1. Tool Diameter -> 2. Chipload -> 3. Cutting Speed -> 4. Feed Rate -> 5. Spindle Speed -> loops to 1
+    els.fwd.krpm.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            els.rev.dia.focus();
+            els.rev.dia.select();
+        }
+    });
+
+    els.rev.dia.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && e.shiftKey) {
+            e.preventDefault();
+            els.fwd.krpm.focus();
+            els.fwd.krpm.select();
+        }
+    });
+}
+
+// --- Population of Dropdowns ---
+function populateDropdowns(panel) {
+    // Searchable input uses dynamic getValuesFn so no manual option rebuild needed
+}
+
+// --- Material Preset Selector ---
+function onMaterialSelect() {
+    const key = els.rev.material.value;
+    const preset = MATERIAL_PRESETS[key];
+    if (!preset || key === 'Custom') return;
+
+    let targetSfm = preset.sfm;
+    let targetFzMil = preset.fz_mil;
+
+    // Convert values according to active unit selections
+    if (els.rev.vcUnit.value === 'm/min') {
+        targetSfm = targetSfm * 0.3048;
+    }
+    
+    if (els.rev.fzUnit.value === 'micron/rev' || els.rev.fzUnit.value === 'mm/tooth') {
+        targetFzMil = (targetFzMil * 0.001) * 25400.0;
+    }
+
+    els.rev.vc.value = targetSfm.toFixed(1);
+    els.rev.fz.value = targetFzMil.toFixed(2);
+
+    showToast(`Loaded workpiece material preset: ${preset.name}`);
+    calculateReverse(true, true);
+}
+
+// --- Advanced Badges ---
+function updateAdvancedBadge(panel) {
+    if (panel === 'rev') {
+        if (!els.rev.flutes || !els.rev.maxRpm || !els.rev.advBadge) return;
+        const flutes = parseInt(els.rev.flutes.value) || 1;
+        const maxRpm = parseFloat(els.rev.maxRpm.value) || 0;
+        if (flutes !== 1 || maxRpm !== 200.0) {
+            els.rev.advBadge.textContent = 'Customized';
+            els.rev.advBadge.className = 'badge-tag badge-warning';
+        } else {
+            els.rev.advBadge.textContent = 'Standard';
+            els.rev.advBadge.className = 'badge-tag badge-info';
+        }
+    } else {
+        if (!els.fwd.flutes || !els.fwd.advBadge) return;
+        const flutes = parseInt(els.fwd.flutes.value) || 1;
+        if (flutes !== 1) {
+            els.fwd.advBadge.textContent = 'Customized';
+            els.fwd.advBadge.className = 'badge-tag badge-warning';
+        } else {
+            els.fwd.advBadge.textContent = 'Standard';
+            els.fwd.advBadge.className = 'badge-tag badge-info';
+        }
+    }
+}
+
+function triggerSyncBadge() {
+    if (!els.syncStatus) return;
+    els.syncStatus.style.transform = 'scale(1.08)';
+    setTimeout(() => {
+        if (els.syncStatus) els.syncStatus.style.transform = 'scale(1)';
+    }, 250);
+}
+
+// --- Global Unit System ---
+function applyGlobalUnitSystem(system, recalculate = true) {
+    const oldUnit = currentUnitSystem === 'metric' ? 'mm' : 'in';
+    const newUnit = system === 'metric' ? 'mm' : 'in';
+
+    currentUnitSystem = system;
+    localStorage.setItem('tct_unit_system', system);
+
+    const isMetric = system === 'metric';
+
+    if (els.unitSliderCheckbox) {
+        els.unitSliderCheckbox.checked = isMetric;
+    }
+    if (els.sliderOptImperial && els.sliderOptMetric) {
+        els.sliderOptImperial.classList.toggle('active', !isMetric);
+        els.sliderOptMetric.classList.toggle('active', isMetric);
+    }
+    if (els.btnMetric && els.btnImperial) {
+        els.btnMetric.classList.toggle('active', isMetric);
+        els.btnMetric.setAttribute('aria-pressed', isMetric ? 'true' : 'false');
+        els.btnImperial.classList.toggle('active', !isMetric);
+        els.btnImperial.setAttribute('aria-pressed', !isMetric ? 'true' : 'false');
+    }
+
+    if (isMetric) {
+        // Convert numerical input values if switching from imperial to metric
+        if (oldUnit === 'in') {
+            const curFz = parseFloat(els.rev.fz.value);
+            if (!isNaN(curFz) && curFz > 0) {
+                els.rev.fz.value = (curFz * 25.4).toFixed(1);
+            }
+            const curVc = parseFloat(els.rev.vc.value);
+            if (!isNaN(curVc) && curVc > 0) {
+                els.rev.vc.value = (curVc * 0.3048).toFixed(1);
+            }
+            const curFr = parseFloat(els.fwd.fr.value);
+            if (!isNaN(curFr) && curFr > 0) {
+                els.fwd.fr.value = ((curFr * 25.4) / 1000.0).toFixed(2);
+            }
+        }
+
+        // Update ALL selection units in form controls to Metric
+        if (els.rev.diaUnit) els.rev.diaUnit.value = 'mm';
+        if (els.rev.fzUnit) els.rev.fzUnit.value = 'micron/rev';
+        if (els.rev.vcUnit) els.rev.vcUnit.value = 'm/min';
+        
+        if (els.fwd.diaUnit) els.fwd.diaUnit.value = 'mm';
+        if (els.fwd.frUnit) els.fwd.frUnit.value = 'm/min';
+    } else {
+        // Convert numerical input values if switching from metric to imperial
+        if (oldUnit === 'mm') {
+            const curFz = parseFloat(els.rev.fz.value);
+            if (!isNaN(curFz) && curFz > 0) {
+                els.rev.fz.value = (curFz / 25.4).toFixed(2);
+            }
+            const curVc = parseFloat(els.rev.vc.value);
+            if (!isNaN(curVc) && curVc > 0) {
+                els.rev.vc.value = (curVc / 0.3048).toFixed(1);
+            }
+            const curFr = parseFloat(els.fwd.fr.value);
+            if (!isNaN(curFr) && curFr > 0) {
+                els.fwd.fr.value = ((curFr * 1000.0) / 25.4).toFixed(1);
+            }
+        }
+
+        // Update ALL selection units in form controls to Imperial
+        if (els.rev.diaUnit) els.rev.diaUnit.value = 'in';
+        if (els.rev.fzUnit) els.rev.fzUnit.value = '0.001 in/rev';
+        if (els.rev.vcUnit) els.rev.vcUnit.value = 'SFM';
+        
+        if (els.fwd.diaUnit) els.fwd.diaUnit.value = 'in';
+        if (els.fwd.frUnit) els.fwd.frUnit.value = 'IPM';
+    }
+
+    if (oldUnit !== newUnit) {
+        if (revDiaSearch) convertSearchableDiameter(revDiaSearch, oldUnit, newUnit);
+        if (fwdDiaSearch) convertSearchableDiameter(fwdDiaSearch, oldUnit, newUnit);
+        triggerSyncBadge();
+    }
+
+    if (recalculate) {
+        calculateAll(true);
+        showToast(`Switched units to ${system.toUpperCase()} (${isMetric ? 'mm, µm/rev, m/min' : 'in, mil, SFM'})`);
+    }
+}
+
+// --- Workflow Mode Tabs ---
+function setWorkflowMode(mode, notify = true) {
+    currentWorkflowMode = mode;
+    localStorage.setItem('tct_workflow_mode', mode);
+
+    [els.tabCompareClean, els.tabCompareMaterial, els.tabRecommend, els.tabVerify].forEach(t => {
+        if (t) {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+        }
+    });
+
+    if (mode === 'compare-clean' || mode === 'compare') {
+        if (els.tabCompareClean) {
+            els.tabCompareClean.classList.add('active');
+            els.tabCompareClean.setAttribute('aria-selected', 'true');
+        }
+        if (els.panelsWrapper) els.panelsWrapper.classList.add('compare-mode', 'compare-clean-mode');
+        if (els.rev.panel) els.rev.panel.classList.remove('panel-hidden');
+        if (els.fwd.panel) els.fwd.panel.classList.remove('panel-hidden');
+        if (els.rev.materialRow) els.rev.materialRow.style.display = 'none';
+        if (notify) showToast("Switched to: Side-by-Side (Direct / No Material)");
+    } else if (mode === 'compare-material') {
+        if (els.tabCompareMaterial) {
+            els.tabCompareMaterial.classList.add('active');
+            els.tabCompareMaterial.setAttribute('aria-selected', 'true');
+        }
+        if (els.panelsWrapper) {
+            els.panelsWrapper.classList.add('compare-mode');
+            els.panelsWrapper.classList.remove('compare-clean-mode');
+        }
+        if (els.rev.panel) els.rev.panel.classList.remove('panel-hidden');
+        if (els.fwd.panel) els.fwd.panel.classList.remove('panel-hidden');
+        if (els.rev.materialRow) els.rev.materialRow.style.display = 'flex';
+        if (notify) showToast("Switched to: Side-by-Side (With Material Presets)");
+    } else if (mode === 'recommend') {
+        if (els.tabRecommend) {
+            els.tabRecommend.classList.add('active');
+            els.tabRecommend.setAttribute('aria-selected', 'true');
+        }
+        if (els.panelsWrapper) els.panelsWrapper.classList.remove('compare-mode', 'compare-clean-mode');
+        if (els.rev.panel) els.rev.panel.classList.remove('panel-hidden');
+        if (els.fwd.panel) els.fwd.panel.classList.add('panel-hidden');
+        if (els.rev.materialRow) els.rev.materialRow.style.display = 'flex';
+        if (notify) showToast("Switched to: Recommend CNC Inputs");
+    } else if (mode === 'verify') {
+        if (els.tabVerify) {
+            els.tabVerify.classList.add('active');
+            els.tabVerify.setAttribute('aria-selected', 'true');
+        }
+        if (els.panelsWrapper) els.panelsWrapper.classList.remove('compare-mode', 'compare-clean-mode');
+        if (els.rev.panel) els.rev.panel.classList.add('panel-hidden');
+        if (els.fwd.panel) els.fwd.panel.classList.remove('panel-hidden');
+        if (notify) showToast("Switched to: Verify Tool Engagement");
+    }
+}
+
+// --- Calculations ---
+function calculateAll(silent = true) {
+    calculateReverse(silent, true);
+}
+
+function calculateReverse(silent = true, syncToForward = true) {
+    try {
+        const diaStr = revDiaSearch ? revDiaSearch.value() : els.rev.dia.value;
+        const raw_dia = MachiningMathEngine.parseDiameter(diaStr);
+        const raw_vc = parseFloat(els.rev.vc.value);
+        const raw_fz = parseFloat(els.rev.fz.value);
+        const flutes = els.rev.flutes ? (parseInt(els.rev.flutes.value) || 1) : 1;
+        const min_rpm_str = els.rev.minRpm ? els.rev.minRpm.value : "20.0";
+        const min_rpm = min_rpm_str ? parseFloat(min_rpm_str) * 1000.0 : 0.0;
+        const max_rpm_str = els.rev.maxRpm ? els.rev.maxRpm.value : "200.0";
+        const max_rpm = max_rpm_str ? parseFloat(max_rpm_str) * 1000.0 : 0.0;
+
+        if (isNaN(raw_dia) || isNaN(raw_vc) || isNaN(raw_fz) || isNaN(flutes) || isNaN(max_rpm) || isNaN(min_rpm) ||
+            raw_dia <= 0 || raw_vc <= 0 || raw_fz <= 0 || flutes <= 0 || max_rpm < 0 || min_rpm < 0) {
+            throw new Error("Invalid Input Parameters");
+        }
+
+        let base_dia_in = els.rev.diaUnit.value === "mm" ? raw_dia / 25.4 : raw_dia;
+        let base_sfm = els.rev.vcUnit.value === "m/min" ? raw_vc / 0.3048 : raw_vc;
+        let base_ipt = raw_fz;
+        
+        if (els.rev.fzUnit.value === 'mm/tooth' || els.rev.fzUnit.value === 'mm/t') {
+            base_ipt = raw_fz / 25.4;
+        } else if (els.rev.fzUnit.value === 'micron/rev' || els.rev.fzUnit.value === 'micron per revolution') {
+            base_ipt = raw_fz / 25400.0;
+        } else if (els.rev.fzUnit.value === '0.001 in/rev' || els.rev.fzUnit.value === '0.001" per revolution') {
+            base_ipt = raw_fz / 1000.0;
+        }
+
+        const res = MachiningMathEngine.calcReverse(base_dia_in, base_sfm, base_ipt, flutes, max_rpm, min_rpm);
+
+        // Update KPI Cards
+        const isMetric = currentUnitSystem === 'metric';
+
+        if (els.rev.kpiKrpm) els.rev.kpiKrpm.textContent = res.krpm.toFixed(1);
+        if (els.rev.kpiKrpmUnit) els.rev.kpiKrpmUnit.textContent = "krpm";
+        if (els.rev.kpiRpmSub) els.rev.kpiRpmSub.textContent = `${Math.round(res.rpm).toLocaleString()} RPM${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`;
+        
+        if (isMetric) {
+            if (els.rev.kpiFrUnit) els.rev.kpiFrUnit.textContent = "m/min";
+            if (els.rev.kpiFr) els.rev.kpiFr.textContent = res.fr_mmin.toFixed(2);
+            if (els.rev.kpiFrSub) els.rev.kpiFrSub.textContent = `${res.fr_mms.toFixed(1)} mm/s (${res.ipm.toFixed(1)} IPM)`;
+            
+            if (els.rev.kpiMrrUnit) els.rev.kpiMrrUnit.textContent = "cm³/min";
+            if (els.rev.kpiMrr) els.rev.kpiMrr.textContent = res.mrr_met.toFixed(3);
+            if (els.rev.kpiMrrSub) els.rev.kpiMrrSub.textContent = `${res.mrr_imp.toFixed(4)} in³/min`;
+        } else {
+            if (els.rev.kpiFrUnit) els.rev.kpiFrUnit.textContent = "IPM";
+            if (els.rev.kpiFr) els.rev.kpiFr.textContent = res.ipm.toFixed(1);
+            if (els.rev.kpiFrSub) els.rev.kpiFrSub.textContent = `${res.fr_mmin.toFixed(2)} m/min (${res.fr_mms.toFixed(1)} mm/s)`;
+            
+            if (els.rev.kpiMrrUnit) els.rev.kpiMrrUnit.textContent = "in³/min";
+            if (els.rev.kpiMrr) els.rev.kpiMrr.textContent = res.mrr_imp.toFixed(4);
+            if (els.rev.kpiMrrSub) els.rev.kpiMrrSub.textContent = `${res.mrr_met.toFixed(3)} cm³/min`;
+        }
+
+        // Update Spindle Safeguard Status Pill & Callout
+        const safeguardDot = document.getElementById('safeguard-dot');
+        const safeguardText = document.getElementById('safeguard-status-text');
+
+        if (res.cap_type === 'min') {
+            if (safeguardDot) safeguardDot.className = 'safeguard-dot capped';
+            if (safeguardText) safeguardText.textContent = `Boosted to Min Limit (${min_rpm_str} krpm)`;
+        } else if (res.cap_type === 'max') {
+            if (safeguardDot) safeguardDot.className = 'safeguard-dot capped';
+            if (safeguardText) safeguardText.textContent = `Throttled at Max Limit (${max_rpm_str} krpm)`;
+        } else if (min_rpm <= 0 && max_rpm <= 0) {
+            if (safeguardDot) safeguardDot.className = 'safeguard-dot unlimited';
+            if (safeguardText) safeguardText.textContent = 'Unlimited (No Limits Configured)';
+        } else {
+            if (safeguardDot) safeguardDot.className = 'safeguard-dot active';
+            const rangeText = min_rpm > 0 && max_rpm > 0 ? `${min_rpm_str} – ${max_rpm_str} krpm` : (max_rpm > 0 ? `Max: ${max_rpm_str} krpm` : `Min: ${min_rpm_str} krpm`);
+            if (safeguardText) safeguardText.textContent = `Spindle Limits Active (${rangeText})`;
+        }
+
+        if (res.capped) {
+            if (els.rev.cappingCallout) {
+                els.rev.cappingCallout.classList.remove('hidden');
+                const limitName = res.cap_type === 'min' ? `minimum threshold (${min_rpm_str} krpm)` : `maximum limit (${max_rpm_str} krpm)`;
+                if (els.rev.cappingDesc) els.rev.cappingDesc.textContent = `Machine spindle speed ${limitName} enforced. Feed rate has been scaled automatically to preserve target chipload (${res.fz_mil.toFixed(2)} mil / ${res.fz_um.toFixed(1)} µm).`;
+                
+                if (els.rev.cappingMetrics) {
+                    els.rev.cappingMetrics.innerHTML = `
+                        <div class="capping-metric-tile">
+                            <span class="cap-tile-label">Req. Spindle Speed:</span>
+                            <span class="cap-tile-val">${res.krpm_theoretical.toFixed(1)} krpm</span>
+                        </div>
+                        <div class="capping-metric-tile">
+                            <span class="cap-tile-label">${res.cap_type === 'min' ? 'Enforced Min Speed:' : 'Capped Max Speed:'}</span>
+                            <span class="cap-tile-val">${res.krpm.toFixed(1)} krpm</span>
+                        </div>
+                        <div class="capping-metric-tile">
+                            <span class="cap-tile-label">Achieved Cutting Speed:</span>
+                            <span class="cap-tile-val">${res.sfm_achieved.toFixed(0)} SFM (${res.vc_achieved_mmin.toFixed(0)} m/min)</span>
+                        </div>
+                    `;
+                }
+            }
+        } else {
+            if (els.rev.cappingCallout) els.rev.cappingCallout.classList.add('hidden');
+        }
+
+        // Populate Table and Cache for Adaptive Mobile Cards
+        const tbody = els.rev.tableBody;
+        tbody.innerHTML = '';
+        lastCalculationData.rows = [];
+
+        const addRow = (param, imp, met, isDivider = false) => {
+            const tr = document.createElement('tr');
+            if (isDivider) {
+                tr.className = 'divider-row';
+                tr.innerHTML = `<td colspan="3">${param}</td>`;
+                lastCalculationData.rows.push({ isDivider: true, title: param });
+            } else {
+                tr.innerHTML = `<td>${param}</td><td>${imp}</td><td>${met}</td>`;
+                lastCalculationData.rows.push({ isDivider: false, param, imp, met });
+            }
+            tbody.appendChild(tr);
+        };
+
+        addRow("Tool Diameter (D)", `${res.dia_in.toFixed(4)} in`, `${res.dia_mm.toFixed(3)} mm`);
+        addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt_target.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} microns/rev`);
+        addRow("Target Cutting Speed (Vc)", `${res.sfm_target.toFixed(0)} SFM`, `${res.vc_mmin.toFixed(1)} m/min`);
+        if (res.capped) {
+            const statusTag = res.cap_type === 'min' ? '[Boosted to Min]' : '[Throttled at Max]';
+            addRow("Achieved Cutting Speed (Vc)", `${res.sfm_achieved.toFixed(0)} SFM ${statusTag}`, `${res.vc_achieved_mmin.toFixed(1)} m/min`);
+        }
+        
+        addRow("Calculated Machine Parameters", "", "", true);
+        addRow("Linear Feed Rate (F)", `${res.ipm.toFixed(1)} IPM`, `${res.fr_mmin.toFixed(3)} m/min | ${res.fr_mms.toFixed(2)} mm/s`);
+        addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`, `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`);
+        addRow("Drilling MRR", `${res.mrr_imp.toFixed(4)} in³/min`, `${res.mrr_met.toFixed(3)} cm³/min`);
+
+        // Mount / Update Adaptive Views (Approach 2, Variant 4A)
+        mountAdaptiveViews();
+
+        // Sync machine outputs to Verify Panel inputs (Spindle Speed & Feed Rate)
+        if (syncToForward) {
+            els.fwd.krpm.value = res.krpm.toFixed(1);
+            if (els.fwd.frUnit.value === 'm/min') {
+                els.fwd.fr.value = res.fr_mmin.toFixed(2);
+            } else if (els.fwd.frUnit.value === 'mm/sec') {
+                els.fwd.fr.value = res.fr_mms.toFixed(1);
+            } else {
+                els.fwd.fr.value = res.ipm.toFixed(1);
+            }
+            if (els.fwd.flutes) {
+                els.fwd.flutes.value = flutes.toString();
+            }
+            calculateForward(true, false);
+            triggerSyncBadge();
+        }
+
+        setStatus("Recommended machine speeds & feeds updated.");
+        if (!silent) showToast("Calculated machine speeds & feeds successfully.");
+    } catch (e) {
+        if (!silent) showToast("Invalid parameter entered. Please check values.", "warning");
+        setStatus("Error: Invalid reverse parameters.");
+    }
+}
+
+function calculateForward(silent = true, syncToReverse = false) {
+    try {
+        const diaStr = revDiaSearch ? revDiaSearch.value() : (fwdDiaSearch ? fwdDiaSearch.value() : els.rev.dia.value);
+        const raw_dia = MachiningMathEngine.parseDiameter(diaStr);
+        const krpm = parseFloat(els.fwd.krpm.value);
+        const raw_fr = parseFloat(els.fwd.fr.value);
+        const flutes = els.rev.flutes ? (parseInt(els.rev.flutes.value) || 1) : 1;
+        const rpm = krpm * 1000.0;
+
+        if (isNaN(rpm) || isNaN(flutes) || isNaN(raw_dia) || isNaN(raw_fr) ||
+            rpm <= 0 || flutes <= 0 || raw_dia <= 0 || raw_fr <= 0) {
+            throw new Error("Invalid Input Parameters");
+        }
+
+        const isDiaMm = (els.rev.diaUnit ? els.rev.diaUnit.value : 'in') === "mm";
+        let base_dia_in = isDiaMm ? raw_dia / 25.4 : raw_dia;
+        let base_ipm = raw_fr;
+        if (els.fwd.frUnit.value === "m/min") base_ipm = (raw_fr * 1000.0) / 25.4;
+        else if (els.fwd.frUnit.value === "mm/sec") base_ipm = (raw_fr * 60.0) / 25.4;
+
+        const res = MachiningMathEngine.calcForward(base_dia_in, rpm, base_ipm, flutes);
+
+        // Update KPI Cards
+        const isMetric = currentUnitSystem === 'metric';
+
+        if (isMetric) {
+            if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "m/min";
+            if (els.fwd.kpiVc) els.fwd.kpiVc.textContent = Math.round(res.vc_mmin).toString();
+            if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.sfm)} SFM`;
+            
+            if (els.fwd.kpiFzUnit) els.fwd.kpiFzUnit.textContent = "microns/rev";
+            if (els.fwd.kpiFz) els.fwd.kpiFz.textContent = res.fz_um.toFixed(1);
+            if (els.fwd.kpiFzSub) els.fwd.kpiFzSub.textContent = `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt.toFixed(5)} in)`;
+            
+            if (els.fwd.kpiMrrUnit) els.fwd.kpiMrrUnit.textContent = "cm³/min";
+            if (els.fwd.kpiMrr) els.fwd.kpiMrr.textContent = res.mrr_met.toFixed(3);
+            if (els.fwd.kpiMrrSub) els.fwd.kpiMrrSub.textContent = `${res.mrr_imp.toFixed(4)} in³/min`;
+        } else {
+            if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "SFM";
+            if (els.fwd.kpiVc) els.fwd.kpiVc.textContent = Math.round(res.sfm).toString();
+            if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.vc_mmin)} m/min`;
+            
+            if (els.fwd.kpiFzUnit) els.fwd.kpiFzUnit.textContent = "mil/rev";
+            if (els.fwd.kpiFz) els.fwd.kpiFz.textContent = res.fz_mil.toFixed(2);
+            if (els.fwd.kpiFzSub) els.fwd.kpiFzSub.textContent = `${res.fz_um.toFixed(1)} µm/rev (${res.ipt.toFixed(5)} in)`;
+            
+            if (els.fwd.kpiMrrUnit) els.fwd.kpiMrrUnit.textContent = "in³/min";
+            if (els.fwd.kpiMrr) els.fwd.kpiMrr.textContent = res.mrr_imp.toFixed(4);
+            if (els.fwd.kpiMrrSub) els.fwd.kpiMrrSub.textContent = `${res.mrr_met.toFixed(3)} cm³/min`;
+        }
+
+        // Populate Table if present
+        const tbody = els.fwd.tableBody;
+        if (tbody) {
+            tbody.innerHTML = '';
+
+            const addRow = (param, imp, met, isDivider = false) => {
+                const tr = document.createElement('tr');
+                if (isDivider) {
+                    tr.className = 'divider-row';
+                    tr.innerHTML = `<td colspan="3">${param}</td>`;
+                } else {
+                    tr.innerHTML = `<td>${param}</td><td>${imp}</td><td>${met}</td>`;
+                }
+                tbody.appendChild(tr);
+            };
+
+            addRow("Tool Diameter (D)", `${res.dia_in.toFixed(4)} in`, `${res.dia_mm.toFixed(3)} mm`);
+            addRow("Linear Feed Rate (F)", `${res.ipm.toFixed(1)} IPM`, `${res.fr_mmin.toFixed(3)} m/min | ${res.fr_mms.toFixed(2)} mm/s`);
+            addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`, `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`);
+            
+            addRow("Calculated Tool Engagement", "", "", true);
+            addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} microns/rev`);
+            addRow("Cutting Speed (Vc)", `${Math.round(res.sfm)} SFM`, `${Math.round(res.vc_mmin)} m/min`);
+            addRow("Drilling MRR", `${res.mrr_imp.toFixed(4)} in³/min`, `${res.mrr_met.toFixed(3)} cm³/min`);
+        }
+
+        // Sync cutting speed and chipload back to Recommend Panel (Left panel)
+        if (syncToReverse) {
+            if (els.rev.vcUnit.value === 'm/min') {
+                els.rev.vc.value = res.vc_mmin.toFixed(1);
+            } else {
+                els.rev.vc.value = res.sfm.toFixed(1);
+            }
+
+            if (els.rev.fzUnit.value === 'micron/rev') {
+                els.rev.fz.value = res.fz_um.toFixed(1);
+            } else if (els.rev.fzUnit.value === 'mm/tooth' || els.rev.fzUnit.value === 'mm/t') {
+                els.rev.fz.value = (res.ipt * 25.4).toFixed(4);
+            } else {
+                els.rev.fz.value = res.fz_mil.toFixed(2);
+            }
+
+            if (els.rev.flutes) {
+                els.rev.flutes.value = flutes.toString();
+            }
+
+            if (els.rev.material) {
+                els.rev.material.value = 'Custom';
+            }
+
+            calculateReverse(true, false);
+            triggerSyncBadge();
+        }
+
+        setStatus("Tool engagement parameters verified successfully.");
+        if (!silent) showToast("Verified tool engagement parameters.");
+    } catch (e) {
+        if (!silent) showToast("Invalid forward parameter entered.", "warning");
+        setStatus("Error: Invalid forward input parameters.");
+    }
+}
+
+// --- Undoable Reset ---
+function resetPanelWithUndo(panel) {
+    if (panel === 'rev') {
+        undoCache.rev = {
+            dia: revDiaSearch ? revDiaSearch.value() : els.rev.dia.value,
+            diaCustom: revDiaSearch ? revDiaSearch.is_custom() : false,
+            diaUnit: els.rev.diaUnit.value,
+            material: els.rev.material.value,
+            vc: els.rev.vc.value,
+            vcUnit: els.rev.vcUnit.value,
+            fz: els.rev.fz.value,
+            fzUnit: els.rev.fzUnit.value,
+            flutes: els.rev.flutes ? els.rev.flutes.value : '1',
+            minRpm: els.rev.minRpm ? els.rev.minRpm.value : '20.0',
+            maxRpm: els.rev.maxRpm ? els.rev.maxRpm.value : '200.0'
+        };
+
+        els.rev.diaUnit.value = currentUnitSystem === 'metric' ? 'mm' : 'in';
+        const defDia = currentUnitSystem === 'metric' ? "0.2489 (0.25mm / 0.0098in)" : "0.0098 (0.25mm)";
+        if (revDiaSearch) revDiaSearch.setValue(defDia, false);
+        els.rev.material.value = "Custom";
+        els.rev.vc.value = currentUnitSystem === 'metric' ? "61.0" : "200.0";
+        els.rev.fz.value = currentUnitSystem === 'metric' ? "12.7" : "0.5";
+        if (els.rev.flutes) els.rev.flutes.value = "1";
+        if (els.rev.minRpm) els.rev.minRpm.value = "20.0";
+        if (els.rev.maxRpm) els.rev.maxRpm.value = "200.0";
+        updateAdvancedBadge('rev');
+        calculateReverse(true);
+
+        showUndoToast("Recommend parameters reset to default.", () => {
+            if (undoCache.rev) {
+                els.rev.diaUnit.value = undoCache.rev.diaUnit;
+                if (revDiaSearch) revDiaSearch.setValue(undoCache.rev.dia, undoCache.rev.diaCustom);
+                els.rev.material.value = undoCache.rev.material;
+                els.rev.vc.value = undoCache.rev.vc;
+                els.rev.vcUnit.value = undoCache.rev.vcUnit;
+                els.rev.fz.value = undoCache.rev.fz;
+                els.rev.fzUnit.value = undoCache.rev.fzUnit;
+                if (els.rev.flutes) els.rev.flutes.value = undoCache.rev.flutes;
+                if (els.rev.minRpm) els.rev.minRpm.value = undoCache.rev.minRpm;
+                if (els.rev.maxRpm) els.rev.maxRpm.value = undoCache.rev.maxRpm;
+                updateAdvancedBadge('rev');
+                calculateReverse(true);
+                showToast("Restored previous parameters.");
+            }
+        });
+    } else {
+        if (!els.fwd.fr || !els.fwd.krpm) return;
+        undoCache.fwd = {
+            dia: fwdDiaSearch ? fwdDiaSearch.value() : (els.fwd.dia ? els.fwd.dia.value : ""),
+            diaCustom: fwdDiaSearch ? fwdDiaSearch.is_custom() : false,
+            diaUnit: els.fwd.diaUnit ? els.fwd.diaUnit.value : 'in',
+            fr: els.fwd.fr.value,
+            frUnit: els.fwd.frUnit ? els.fwd.frUnit.value : 'IPM',
+            krpm: els.fwd.krpm.value,
+            flutes: els.fwd.flutes ? els.fwd.flutes.value : '1'
+        };
+
+        if (els.fwd.diaUnit) els.fwd.diaUnit.value = currentUnitSystem === 'metric' ? 'mm' : 'in';
+        const defDia = currentUnitSystem === 'metric' ? "0.2489 (0.25mm / 0.0098in)" : "0.0098 (0.25mm)";
+        if (fwdDiaSearch) fwdDiaSearch.setValue(defDia, false);
+        els.fwd.fr.value = currentUnitSystem === 'metric' ? "1.2" : "48.0";
+        els.fwd.krpm.value = "78.0";
+        if (els.fwd.flutes) els.fwd.flutes.value = "1";
+        updateAdvancedBadge('fwd');
+        calculateForward(true);
+
+        showUndoToast("Verify parameters reset to default.", () => {
+            if (undoCache.fwd) {
+                if (els.fwd.diaUnit) els.fwd.diaUnit.value = undoCache.fwd.diaUnit;
+                if (fwdDiaSearch) fwdDiaSearch.setValue(undoCache.fwd.dia, undoCache.fwd.diaCustom);
+                els.fwd.fr.value = undoCache.fwd.fr;
+                if (els.fwd.frUnit) els.fwd.frUnit.value = undoCache.fwd.frUnit;
+                els.fwd.krpm.value = undoCache.fwd.krpm;
+                if (els.fwd.flutes) els.fwd.flutes.value = undoCache.fwd.flutes;
+                updateAdvancedBadge('fwd');
+                calculateForward(true);
+                showToast("Restored previous parameters.");
+            }
+        });
+    }
+}
+
+// --- Clipboard Image Export & CSV ---
+function copyTableToClipboard(panel = 'rev') {
+    const tableBody = els[panel] ? els[panel].tableBody : els.rev.tableBody;
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    if (rows.length === 0) {
+        showToast("No data available to export.", "warning");
+        return;
+    }
+
+    // Extract table rows data
+    const rowData = [];
+    rows.forEach(r => {
+        if (r.classList.contains('divider-row')) {
+            rowData.push({ isDivider: true, title: r.textContent.trim() });
+        } else {
+            const cells = r.querySelectorAll('td');
+            if (cells.length === 3) {
+                rowData.push({
+                    isDivider: false,
+                    param: cells[0].textContent.trim(),
+                    imp: cells[1].textContent.trim(),
+                    met: cells[2].textContent.trim()
+                });
+            }
+        }
+    });
+
+    // Create High-DPI Canvas (2x scale for crystal-clear retina render)
+    const scale = 2;
+    const width = 880;
+    
+    const headerHeight = 76;
+    const kpiHeight = 78;
+    const tableHeaderHeight = 38;
+    let tableRowsHeight = 0;
+    rowData.forEach(item => {
+        tableRowsHeight += item.isDivider ? 32 : 30;
+    });
+    const footerHeight = 44;
+    const padding = 28;
+    
+    const height = padding + headerHeight + kpiHeight + tableHeaderHeight + tableRowsHeight + footerHeight + padding;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    // Color Theme Styling
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const colors = {
+        bg: isDark ? '#0f172a' : '#ffffff',
+        cardBg: isDark ? '#1e293b' : '#f8fafc',
+        cardBorder: isDark ? '#334155' : '#e2e8f0',
+        textPrimary: isDark ? '#f8fafc' : '#0f172a',
+        textSecondary: isDark ? '#94a3b8' : '#475569',
+        textMuted: isDark ? '#64748b' : '#94a3b8',
+        brandPrimary: '#4f46e5',
+        brandLight: isDark ? '#312e81' : '#eef2ff',
+        rowAlt: isDark ? '#172033' : '#f8fafc',
+        dividerBg: isDark ? '#1e293b' : '#eef2ff',
+        dividerText: isDark ? '#818cf8' : '#4338ca',
+        accentBorder: '#6366f1'
+    };
+
+    // Background Canvas Fill
+    ctx.fillStyle = colors.bg;
+    ctx.fillRect(0, 0, width, height);
+
+    // Outer Border
+    ctx.strokeStyle = colors.cardBorder;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
+
+    // 1. Header Section
+    let curY = padding;
+    
+    // Draw TCT Brand Logo if available in DOM
+    const logoImg = document.querySelector('.brand-logo') || document.querySelector('.mobile-bottom-logo') || document.querySelector('img[alt="TCT Logo"]');
+    let textX = padding;
+    
+    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+        const logoH = 48;
+        const logoW = Math.round((logoImg.naturalWidth / logoImg.naturalHeight) * logoH);
+        const logoY = curY + 6;
+        
+        if (isDark) {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(padding - 4, logoY - 4, logoW + 8, logoH + 8, 6);
+            } else {
+                ctx.rect(padding - 4, logoY - 4, logoW + 8, logoH + 8);
+            }
+            ctx.fill();
+        }
+        
+        ctx.drawImage(logoImg, padding, logoY, logoW, logoH);
+        textX = padding + logoW + 18;
+    }
+    
+    // Brand Tag
+    ctx.fillStyle = colors.brandPrimary;
+    ctx.font = 'bold 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("TCT PRECISION TOOLING", textX, curY + 14);
+
+    // Timestamp (Right-aligned)
+    ctx.fillStyle = colors.textMuted;
+    ctx.font = '500 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.textAlign = 'right';
+    const nowStr = new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    ctx.fillText(nowStr, width - padding, curY + 14);
+    ctx.textAlign = 'left';
+
+    // Title
+    ctx.fillStyle = colors.textPrimary;
+    ctx.font = 'bold 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("Feeds, Speeds & Machine Parameters Report", textX, curY + 38);
+
+    // Subtitle
+    ctx.fillStyle = colors.textSecondary;
+    ctx.font = '13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    const diaInput = revDiaSearch ? revDiaSearch.value() : els.rev.dia.value;
+    ctx.fillText(`Target Tool: ${diaInput} | Precision CNC Calculation`, textX, curY + 58);
+
+    curY += headerHeight;
+
+    // 2. Summary KPI Cards (3 columns)
+    const kpiW = (width - (padding * 2) - 20) / 3;
+    const isMetric = currentUnitSystem === 'metric';
+    const kpis = [
+        {
+            label: "RECOMMENDED FEED RATE",
+            val: isMetric ? `${els.rev.kpiFr.textContent} m/min` : `${els.rev.kpiFr.textContent} IPM`,
+            sub: els.rev.kpiFrSub.textContent
+        },
+        {
+            label: "SPINDLE SPEED",
+            val: `${els.rev.kpiKrpm.textContent} krpm`,
+            sub: els.rev.kpiRpmSub.textContent
+        },
+        {
+            label: "DRILLING MRR",
+            val: isMetric ? `${els.rev.kpiMrr.textContent} cm³/min` : `${els.rev.kpiMrr.textContent} in³/min`,
+            sub: els.rev.kpiMrrSub.textContent
+        }
+    ];
+
+    kpis.forEach((kpi, idx) => {
+        const kX = padding + idx * (kpiW + 10);
+        ctx.fillStyle = colors.cardBg;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(kX, curY, kpiW, 64, 6);
+        } else {
+            ctx.rect(kX, curY, kpiW, 64);
+        }
+        ctx.fill();
+        ctx.strokeStyle = idx === 0 ? colors.accentBorder : colors.cardBorder;
+        ctx.lineWidth = idx === 0 ? 1.5 : 1;
+        ctx.stroke();
+
+        ctx.fillStyle = idx === 0 ? colors.brandPrimary : colors.textMuted;
+        ctx.font = 'bold 10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(kpi.label, kX + 12, curY + 18);
+
+        ctx.fillStyle = colors.textPrimary;
+        ctx.font = 'bold 16px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(kpi.val, kX + 12, curY + 38);
+
+        ctx.fillStyle = colors.textSecondary;
+        ctx.font = '11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(kpi.sub, kX + 12, curY + 54);
+    });
+
+    curY += kpiHeight;
+
+    // 3. Engineering Specs Table
+    const col1W = 330;
+    const col2W = 250;
+    const col3W = width - (padding * 2) - col1W - col2W;
+
+    // Table Header Background
+    ctx.fillStyle = colors.cardBg;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(padding, curY, width - (padding * 2), tableHeaderHeight, [4, 4, 0, 0]);
+    } else {
+        ctx.rect(padding, curY, width - (padding * 2), tableHeaderHeight);
+    }
+    ctx.fill();
+    ctx.strokeStyle = colors.cardBorder;
+    ctx.stroke();
+
+    // Table Header Text
+    ctx.fillStyle = colors.textPrimary;
+    ctx.font = 'bold 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("ENGINEERING PARAMETER", padding + 12, curY + 23);
+    ctx.fillText("IMPERIAL VALUE", padding + col1W + 12, curY + 23);
+    ctx.fillText("METRIC EQUIVALENT", padding + col1W + col2W + 12, curY + 23);
+
+    curY += tableHeaderHeight;
+
+    // Table Rows
+    let isZebra = false;
+    rowData.forEach((item) => {
+        if (item.isDivider) {
+            ctx.fillStyle = colors.dividerBg;
+            ctx.fillRect(padding, curY, width - (padding * 2), 30);
+            ctx.strokeStyle = colors.cardBorder;
+            ctx.strokeRect(padding, curY, width - (padding * 2), 30);
+
+            ctx.fillStyle = colors.dividerText;
+            ctx.font = 'bold 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.fillText(item.title.toUpperCase(), padding + 12, curY + 19);
+            curY += 30;
+            isZebra = false;
+        } else {
+            ctx.fillStyle = isZebra ? colors.rowAlt : colors.bg;
+            ctx.fillRect(padding, curY, width - (padding * 2), 30);
+            ctx.strokeStyle = colors.cardBorder;
+            ctx.strokeRect(padding, curY, width - (padding * 2), 30);
+
+            ctx.fillStyle = colors.textPrimary;
+            ctx.font = '500 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.fillText(item.param, padding + 12, curY + 19);
+
+            const isHighlighted = item.imp.includes('IPM') || item.imp.includes('krpm');
+            ctx.fillStyle = isHighlighted ? colors.brandPrimary : colors.textPrimary;
+            ctx.font = isHighlighted ? 'bold 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' : '12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.fillText(item.imp, padding + col1W + 12, curY + 19);
+
+            ctx.fillStyle = colors.textSecondary;
+            ctx.font = '12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+            ctx.fillText(item.met, padding + col1W + col2W + 12, curY + 19);
+
+            curY += 30;
+            isZebra = !isZebra;
+        }
+    });
+
+    // 4. Footer Bar
+    curY += 14;
+    ctx.fillStyle = colors.textMuted;
+    ctx.font = '11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("TCT CNC Portal • Verified Engineering Standards • ISO / DIN Compliant", padding, curY + 14);
+
+    ctx.textAlign = 'right';
+    ctx.fillText("Exported via TCT Calculator", width - padding, curY + 14);
+    ctx.textAlign = 'left';
+
+    // 5. Write Image to Clipboard as PNG Blob
+    canvas.toBlob(async (blob) => {
+        if (!blob) {
+            showToast("Failed to generate report image.", "warning");
+            return;
+        }
+
+        try {
+            if (navigator.clipboard && window.ClipboardItem) {
+                const item = new ClipboardItem({ 'image/png': blob });
+                await navigator.clipboard.write([item]);
+                showToast("✓ Report image copied to clipboard! Paste directly into Slack, Teams, Email, or CAD.");
+            } else {
+                throw new Error("ClipboardItem API not supported");
+            }
+        } catch (err) {
+            console.warn("Clipboard image write failed, falling back to download:", err);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `TCT_Engineering_Parameters_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("✓ Report image downloaded as PNG.");
+        }
+    }, 'image/png', 1.0);
+}
+
+function exportTableCSV(panel) {
+    const tableBody = els[panel].tableBody;
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    if (rows.length === 0) {
+        showToast("No data available to export.", "warning");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Engineering Parameter,Imperial Value,Metric Equivalent\n";
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 3) {
+            const rowArr = Array.from(cells).map(cell => `"${cell.textContent.replace(/"/g, '""')}"`);
+            csvContent += rowArr.join(",") + "\n";
+        }
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `TCT_${panel === 'rev' ? 'Recommend_CNC_Speeds' : 'Verify_Tool_Engagement'}_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast("✓ Exported engineering specifications CSV.");
+}
+
+// --- Global Shortcuts Handler ---
+function handleGlobalKeydown(e) {
+    // Check if user is typing in an input
+    const isTyping = ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+    // Ctrl+Enter / Cmd+Enter -> Recalculate
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        calculateAll(false);
+        return;
+    }
+
+    // Ctrl+Shift+C -> Copy Table
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+        e.preventDefault();
+        const activePanel = currentWorkflowMode === 'verify' ? 'fwd' : 'rev';
+        copyTableToClipboard(activePanel);
+        return;
+    }
+
+    // Ctrl+Shift+E -> Export CSV
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+        e.preventDefault();
+        const activePanel = currentWorkflowMode === 'verify' ? 'fwd' : 'rev';
+        exportTableCSV(activePanel);
+        return;
+    }
+
+    // Ctrl+Shift+R -> Reset Panel
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'R' || e.key === 'r')) {
+        e.preventDefault();
+        const activePanel = currentWorkflowMode === 'verify' ? 'fwd' : 'rev';
+        resetPanelWithUndo(activePanel);
+        return;
+    }
+
+    // Shift+D -> Toggle Theme
+    if (e.shiftKey && (e.key === 'D' || e.key === 'd') && !isTyping) {
+        e.preventDefault();
+        toggleTheme();
+        return;
+    }
+
+    // Shift+U -> Toggle Units
+    if (e.shiftKey && (e.key === 'U' || e.key === 'u') && !isTyping) {
+        e.preventDefault();
+        applyGlobalUnitSystem(currentUnitSystem === 'imperial' ? 'metric' : 'imperial');
+        return;
+    }
+
+    // Numbers 1, 2, 3, 4 -> Switch tabs
+    if (!isTyping && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (e.key === '1') { setWorkflowMode('compare-clean'); }
+        else if (e.key === '2') { setWorkflowMode('compare-material'); }
+        else if (e.key === '3') { setWorkflowMode('recommend'); }
+        else if (e.key === '4') { setWorkflowMode('verify'); }
+        else if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+            openShortcutsModal(true);
+        }
+    }
+
+    // Escape -> Close modal
+    if (e.key === 'Escape') {
+        openShortcutsModal(false);
+    }
+}
+
+// --- Theme Management ---
+function initTheme() {
+    const savedTheme = localStorage.getItem('tct_theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    document.body.setAttribute('data-theme', theme);
+    updateThemeButton(theme);
+}
+
+function toggleTheme() {
+    const current = document.body.getAttribute('data-theme') || 'light';
+    const nextTheme = current === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('tct_theme', nextTheme);
+    updateThemeButton(nextTheme);
+    showToast(`Switched to ${nextTheme} theme`);
+}
+
+function updateThemeButton(theme) {
+    if (theme === 'dark') {
+        els.themeIcon.textContent = '☀️';
+        els.themeText.textContent = 'Light Mode';
+    } else {
+        els.themeIcon.textContent = '🌙';
+        els.themeText.textContent = 'Dark Mode';
+    }
+}
+
+// --- Modals & Toasts ---
+function openShortcutsModal(show = true) {
+    if (show) {
+        els.shortcutsModal.classList.remove('hidden');
+    } else {
+        els.shortcutsModal.classList.add('hidden');
+    }
+}
+
+function setStatus(text) {
+    els.statusText.textContent = text;
+}
+
+function showToast(message, type = "normal") {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'success' ? 'toast-success' : ''}`;
+    toast.textContent = message;
+    
+    els.toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(12px)';
+        setTimeout(() => toast.remove(), 250);
+    }, 3500);
+}
+
+function showUndoToast(message, undoCallback) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    
+    const msgSpan = document.createElement('span');
+    msgSpan.textContent = message;
+    toast.appendChild(msgSpan);
+    
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'toast-undo-btn';
+    undoBtn.textContent = 'Undo';
+    undoBtn.onclick = () => {
+        undoCallback();
+        toast.remove();
+    };
+    toast.appendChild(undoBtn);
+    
+    els.toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(12px)';
+            setTimeout(() => toast.remove(), 250);
+        }
+    }, 6000);
+}
+
+// --- DOM Ready Bootstrapping ---
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>

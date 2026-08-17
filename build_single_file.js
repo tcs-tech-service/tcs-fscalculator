@@ -46,12 +46,17 @@ html = html.replace(
     () => embeddedScripts
 );
 
-// 4. Save Standalone HTML in root and web_app folders
+// 4. Save Standalone HTML in root and web_app folders (and index.html at root for GitHub Pages)
 const rootOut = path.join(__dirname, 'TCT_Feeds_Speeds_Calculator_Standalone.html');
+const rootIndexOut = path.join(__dirname, 'index.html');
 const webAppOut = path.join(webAppDir, 'TCT_Feeds_Speeds_Calculator_Standalone.html');
+const webAppDatedOut = path.join(webAppDir, '33280_TCT_Feeds_Speeds_Calculator_Standalone.html');
 
 fs.writeFileSync(rootOut, html, 'utf8');
+fs.writeFileSync(rootIndexOut, html, 'utf8');
 fs.writeFileSync(webAppOut, html, 'utf8');
+fs.writeFileSync(webAppDatedOut, html, 'utf8');
 
 const sizeKb = Math.round(fs.statSync(rootOut).size / 1024);
-console.log(`✓ Standalone HTML successfully created at:\n  ${rootOut}\n  (${sizeKb} KB, 100% self-contained)`);
+console.log(`✓ Standalone HTML successfully created at:\n  ${rootOut}\n  ${rootIndexOut} (GitHub Pages root)\n  (${sizeKb} KB, 100% self-contained)`);
+
