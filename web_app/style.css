@@ -1643,6 +1643,36 @@ html[data-device="mobile"] [data-component="desktop-table"] {
 html[data-device="desktop"] .adaptive-mobile-bottom-dock,
 html[data-device="tablet"] .adaptive-mobile-bottom-dock,
 html[data-device="desktop"] [data-mount="adaptive-summary"],
-html[data-device="tablet"] [data-mount="adaptive-summary"] {
+html[data-device="tablet"] [data-mount="adaptive-summary"],
+html[data-device="desktop"] .mobile-bottom-brand,
+html[data-device="tablet"] .mobile-bottom-brand {
     display: none !important;
+}
+
+/* ---------- Mobile Bottom Brand (Logo at Bottom of Screen) ---------- */
+.mobile-bottom-brand {
+    display: none;
+}
+
+html[data-device="mobile"] .mobile-bottom-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 1.5rem 0.5rem 4.5rem;
+    text-align: center;
+}
+
+.mobile-bottom-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.9;
+}
+
+.mobile-bottom-tagline {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
