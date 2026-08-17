@@ -3,6 +3,42 @@
  * Precision PCB & Micro-Machining Speeds & Feeds Logic
  */
 
+// --- Responsive Device & Breakpoint Detection ---
+const BREAKPOINTS = {
+    mobile:  '(max-width: 767px)',
+    tablet:  '(min-width: 768px) and (max-width: 1023px)',
+    desktop: '(min-width: 1024px)',
+};
+
+function detectDevice() {
+    if (window.matchMedia(BREAKPOINTS.desktop).matches) return 'desktop';
+    if (window.matchMedia(BREAKPOINTS.tablet).matches) return 'tablet';
+    return 'mobile';
+}
+
+function applyDeviceDataset() {
+    const device = detectDevice();
+    document.documentElement.dataset.device = device;
+    if (document.body) {
+        document.body.dataset.touch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'true' : 'false';
+    }
+    return device;
+}
+
+// Initial run
+let currentDevice = applyDeviceDataset();
+
+// Re-check on breakpoint crossings only (not every pixel of resize)
+Object.values(BREAKPOINTS).forEach((query) => {
+    window.matchMedia(query).addEventListener('change', () => {
+        const next = applyDeviceDataset();
+        if (next !== currentDevice) {
+            currentDevice = next;
+            document.dispatchEvent(new CustomEvent('devicechange', { detail: { device: next } }));
+        }
+    });
+});
+
 // --- Data & State ---
 let imperial_sizes = [];
 let metric_sizes = [];
@@ -470,6 +506,9 @@ const els = {
 
 // --- Initialization ---
 function init() {
+    // 0. Sync responsive device & touch datasets
+    applyDeviceDataset();
+
     // 1. Initialize Theme from storage or system preference
     initTheme();
 

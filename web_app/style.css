@@ -50,6 +50,10 @@
     
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Responsive Breakpoints */
+    --bp-tablet: 768px;
+    --bp-desktop: 1024px;
 }
 
 [data-theme="dark"] {
@@ -1258,4 +1262,200 @@ body {
 @keyframes toastSlideIn {
     from { opacity: 0; transform: translateY(12px) scale(0.95); }
     to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==========================================================================
+   Responsive Design & Device Dataset Layout Rules
+   Reference: responsive-design-implementation.md
+   ========================================================================== */
+
+/* ---------- Mobile Layout (< 768px) & html[data-device="mobile"] ---------- */
+@media (max-width: 767px), html[data-device="mobile"] {
+    .app-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .brand-area {
+        gap: 0.75rem;
+    }
+
+    .brand-logo {
+        height: 36px;
+    }
+
+    .brand-titles h1 {
+        font-size: 1.125rem;
+    }
+
+    .brand-titles .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .main-container {
+        padding: 0.75rem 0.625rem 4.5rem;
+    }
+
+    .calc-panel {
+        padding: 1.125rem 0.875rem;
+        border-radius: var(--radius-lg);
+    }
+
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .panel-title-wrap h2 {
+        font-size: 1.125rem;
+    }
+
+    .panel-desc {
+        font-size: 0.8125rem;
+    }
+
+    .form-row-grid {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+    }
+
+    .unit-slider-switch {
+        width: 100%;
+    }
+
+    .kpi-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 0.625rem;
+    }
+
+    .kpi-card {
+        padding: 0.875rem 1rem;
+    }
+
+    .kpi-main-val {
+        font-size: 1.5rem;
+    }
+
+    .actions-dock {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .actions-dock .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.625rem 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    .safeguard-status-pill {
+        height: auto;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .capping-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-wrapper {
+        border-radius: var(--radius-md);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .engineering-table {
+        min-width: 520px;
+    }
+
+    .app-status-bar {
+        padding: 0.5rem 1rem;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-start;
+    }
+
+    .status-shortcuts-hint {
+        display: none;
+    }
+
+    .toast-container {
+        right: 1rem;
+        bottom: 3.25rem;
+        left: 1rem;
+    }
+
+    .toast {
+        width: 100%;
+        font-size: 0.8125rem;
+        padding: 0.625rem 0.875rem;
+    }
+}
+
+/* ---------- Tablet Layout (768px - 1023px) & html[data-device="tablet"] ---------- */
+@media (min-width: 768px) and (max-width: 1023px), html[data-device="tablet"] {
+    .main-container {
+        padding: 1.25rem 1.25rem 4.5rem;
+        max-width: 100%;
+    }
+
+    .calc-panel {
+        padding: 1.5rem;
+    }
+
+    .kpi-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    .actions-dock {
+        flex-wrap: wrap;
+    }
+}
+
+/* ---------- Desktop Layout (>= 1024px) & html[data-device="desktop"] ---------- */
+@media (min-width: 1024px), html[data-device="desktop"] {
+    .main-container {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 5rem;
+    }
+
+    .calc-panel {
+        padding: 2rem;
+    }
+
+    .kpi-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* ---------- Touch Device Ergonomics: body[data-touch="true"] ---------- */
+body[data-touch="true"] .btn,
+body[data-touch="true"] .form-input,
+body[data-touch="true"] .unit-select,
+body[data-touch="true"] .searchable-toggle-btn {
+    min-height: 42px;
+}
+
+body[data-touch="true"] .searchable-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+}
+
+body[data-touch="true"] .unit-slider-label {
+    min-height: 40px;
 }
