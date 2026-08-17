@@ -3,17 +3,20 @@
  * Precision PCB & Micro-Machining Speeds & Feeds Logic
  */
 
-// --- Responsive Device & Breakpoint Detection ---
-const BREAKPOINTS = {
-    mobile:  '(max-width: 767px)',
-    tablet:  '(min-width: 768px) and (max-width: 1023px)',
-    desktop: '(min-width: 1024px)',
-};
+// --- Adaptive Device Detection & Client-Side Branching (Approach 2, Variant 4A) ---
+function debounce(fn, wait) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+    };
+}
 
 function detectDevice() {
-    if (window.matchMedia(BREAKPOINTS.desktop).matches) return 'desktop';
-    if (window.matchMedia(BREAKPOINTS.tablet).matches) return 'tablet';
-    return 'mobile';
+    const width = window.innerWidth;
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
 }
 
 function applyDeviceDataset() {
@@ -25,19 +28,44 @@ function applyDeviceDataset() {
     return device;
 }
 
+let lastCalculationData = { rows: [] };
+
+function mountAdaptiveViews() {
+    const device = applyDeviceDataset();
+    const summaryMount = document.querySelector('[data-mount="adaptive-summary"]');
+    const mobileDockMount = document.querySelector('[data-mount="mobile-dock"]');
+
+    if (device === 'mobile' && window.AppTemplates) {
+        if (summaryMount) {
+            summaryMount.innerHTML = '';
+            summaryMount.appendChild(window.AppTemplates.renderMobileSummary(lastCalculationData));
+        }
+        if (mobileDockMount && !mobileDockMount.hasChildNodes()) {
+            mobileDockMount.appendChild(window.AppTemplates.renderMobileBottomDock({
+                onCalc: () => calculateAll(false),
+                onCopy: () => copyTableToClipboard('rev'),
+                onExport: () => exportTableCSV('rev'),
+                onReset: () => resetPanelWithUndo('rev')
+            }));
+        }
+    } else {
+        if (summaryMount) summaryMount.innerHTML = '';
+        if (mobileDockMount) mobileDockMount.innerHTML = '';
+    }
+}
+
 // Initial run
 let currentDevice = applyDeviceDataset();
 
-// Re-check on breakpoint crossings only (not every pixel of resize)
-Object.values(BREAKPOINTS).forEach((query) => {
-    window.matchMedia(query).addEventListener('change', () => {
-        const next = applyDeviceDataset();
-        if (next !== currentDevice) {
-            currentDevice = next;
-            document.dispatchEvent(new CustomEvent('devicechange', { detail: { device: next } }));
-        }
-    });
-});
+// Re-check on breakpoint crossings and window resize (debounced per 4A spec)
+window.addEventListener('resize', debounce(() => {
+    const next = detectDevice();
+    if (next !== currentDevice) {
+        currentDevice = next;
+        mountAdaptiveViews();
+        document.dispatchEvent(new CustomEvent('devicechange', { detail: { device: next } }));
+    }
+}, 150));
 
 // --- Data & State ---
 let imperial_sizes = [];
@@ -1028,17 +1056,20 @@ function calculateReverse(silent = true, syncToForward = true) {
             if (els.rev.cappingCallout) els.rev.cappingCallout.classList.add('hidden');
         }
 
-        // Populate Table
+        // Populate Table and Cache for Adaptive Mobile Cards
         const tbody = els.rev.tableBody;
         tbody.innerHTML = '';
+        lastCalculationData.rows = [];
 
         const addRow = (param, imp, met, isDivider = false) => {
             const tr = document.createElement('tr');
             if (isDivider) {
                 tr.className = 'divider-row';
                 tr.innerHTML = `<td colspan="3">${param}</td>`;
+                lastCalculationData.rows.push({ isDivider: true, title: param });
             } else {
                 tr.innerHTML = `<td>${param}</td><td>${imp}</td><td>${met}</td>`;
+                lastCalculationData.rows.push({ isDivider: false, param, imp, met });
             }
             tbody.appendChild(tr);
         };
@@ -1055,6 +1086,9 @@ function calculateReverse(silent = true, syncToForward = true) {
         addRow("Linear Feed Rate (F)", `${res.ipm.toFixed(1)} IPM`, `${res.fr_mmin.toFixed(3)} m/min | ${res.fr_mms.toFixed(2)} mm/s`);
         addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`, `${res.krpm.toFixed(1)} krpm`);
         addRow("Drilling MRR", `${res.mrr_imp.toFixed(4)} in³/min`, `${res.mrr_met.toFixed(3)} cm³/min`);
+
+        // Mount / Update Adaptive Views (Approach 2, Variant 4A)
+        mountAdaptiveViews();
 
         // Sync machine outputs to Verify Panel inputs (Spindle Speed & Feed Rate)
         if (syncToForward) {

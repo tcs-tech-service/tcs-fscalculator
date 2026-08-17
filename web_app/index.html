@@ -8,6 +8,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Synchronous Inline Device Detection (Approach 2, Variant 4A - FOWC Prevention) -->
+    <script>
+        (function() {
+            var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            var w = window.innerWidth;
+            var dev = (w < 768) ? 'mobile' : (w < 1024 ? 'tablet' : 'desktop');
+            document.documentElement.dataset.device = dev;
+        })();
+    </script>
 </head>
 <body data-theme="light">
     <!-- Top Header -->
@@ -310,8 +320,11 @@
                     </button>
                 </div>
 
-                <!-- Full Engineering Specs Table -->
-                <div class="table-wrapper">
+                <!-- Adaptive Component Mount: Mobile Card-Based Summary -->
+                <div id="adaptive-summary-mount" data-mount="adaptive-summary"></div>
+
+                <!-- Full Engineering Specs Table (Desktop / Tablet View) -->
+                <div class="table-wrapper" data-component="desktop-table">
                     <table class="engineering-table" id="table-rev">
                         <thead>
                             <tr>
@@ -328,6 +341,9 @@
             </section>
         </div>
     </main>
+
+    <!-- Adaptive Mobile Bottom Action Bar Mount Point -->
+    <div id="adaptive-mobile-dock-mount" data-mount="mobile-dock"></div>
 
     <!-- Sticky Footer Status Bar -->
     <footer class="app-status-bar">
@@ -394,6 +410,7 @@
 
     <!-- Scripts -->
     <script src="sizes.js"></script>
+    <script src="templates.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
