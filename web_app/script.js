@@ -778,7 +778,7 @@ function onMaterialSelect() {
     let targetFzMil = preset.fz_mil;
 
     // Convert values according to active unit selections
-    if (els.rev.vcUnit.value === 'm/min') {
+    if (els.rev.vcUnit.value === 'SMM' || els.rev.vcUnit.value === 'm/min') {
         targetSfm = targetSfm * 0.3048;
     }
     
@@ -871,7 +871,7 @@ function applyGlobalUnitSystem(system, recalculate = true) {
         // Update ALL selection units in form controls to Metric
         if (els.rev.diaUnit) els.rev.diaUnit.value = 'mm';
         if (els.rev.fzUnit) els.rev.fzUnit.value = 'micron/rev';
-        if (els.rev.vcUnit) els.rev.vcUnit.value = 'm/min';
+        if (els.rev.vcUnit) els.rev.vcUnit.value = 'SMM';
         
         if (els.fwd.diaUnit) els.fwd.diaUnit.value = 'mm';
         if (els.fwd.frUnit) els.fwd.frUnit.value = 'm/min';
@@ -909,7 +909,7 @@ function applyGlobalUnitSystem(system, recalculate = true) {
 
     if (recalculate) {
         calculateAll(true);
-        showToast(`Switched units to ${system.toUpperCase()} (${isMetric ? 'mm, µm/rev, m/min' : 'in, mil, SFM'})`);
+        showToast(`Switched units to ${system.toUpperCase()} (${isMetric ? 'mm, microns/rev, SMM' : 'in, mil, SFM'})`);
     }
 }
 
@@ -993,7 +993,7 @@ function calculateReverse(silent = true, syncToForward = true) {
         }
 
         let base_dia_in = els.rev.diaUnit.value === "mm" ? raw_dia / 25.4 : raw_dia;
-        let base_sfm = els.rev.vcUnit.value === "m/min" ? raw_vc / 0.3048 : raw_vc;
+        let base_sfm = (els.rev.vcUnit.value === "SMM" || els.rev.vcUnit.value === "m/min") ? raw_vc / 0.3048 : raw_vc;
         let base_ipt = raw_fz;
         
         if (els.rev.fzUnit.value === 'mm/tooth' || els.rev.fzUnit.value === 'mm/t') {
@@ -1068,7 +1068,7 @@ function calculateReverse(silent = true, syncToForward = true) {
                         </div>
                         <div class="capping-metric-tile">
                             <span class="cap-tile-label">Achieved Cutting Speed:</span>
-                            <span class="cap-tile-val">${res.sfm_achieved.toFixed(0)} SFM (${res.vc_achieved_mmin.toFixed(0)} m/min)</span>
+                            <span class="cap-tile-val">${res.sfm_achieved.toFixed(0)} SFM (${res.vc_achieved_mmin.toFixed(0)} SMM)</span>
                         </div>
                     `;
                 }
@@ -1097,10 +1097,10 @@ function calculateReverse(silent = true, syncToForward = true) {
 
         addRow("Tool Diameter (D)", `${res.dia_in.toFixed(4)} in`, `${res.dia_mm.toFixed(3)} mm`);
         addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt_target.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} microns/rev`);
-        addRow("Target Cutting Speed (Vc)", `${res.sfm_target.toFixed(0)} SFM`, `${res.vc_mmin.toFixed(1)} m/min`);
+        addRow("Target Cutting Speed (Vc)", `${res.sfm_target.toFixed(0)} SFM`, `${res.vc_mmin.toFixed(1)} SMM`);
         if (res.capped) {
             const statusTag = res.cap_type === 'min' ? '[Boosted to Min]' : '[Throttled at Max]';
-            addRow("Achieved Cutting Speed (Vc)", `${res.sfm_achieved.toFixed(0)} SFM ${statusTag}`, `${res.vc_achieved_mmin.toFixed(1)} m/min`);
+            addRow("Achieved Cutting Speed (Vc)", `${res.sfm_achieved.toFixed(0)} SFM ${statusTag}`, `${res.vc_achieved_mmin.toFixed(1)} SMM`);
         }
         
         addRow("Calculated Machine Parameters", "", "", true);
@@ -1162,7 +1162,7 @@ function calculateForward(silent = true, syncToReverse = false) {
         const isMetric = currentUnitSystem === 'metric';
 
         if (isMetric) {
-            if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "m/min";
+            if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "SMM";
             if (els.fwd.kpiVc) els.fwd.kpiVc.textContent = Math.round(res.vc_mmin).toString();
             if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.sfm)} SFM`;
             
@@ -1176,7 +1176,7 @@ function calculateForward(silent = true, syncToReverse = false) {
         } else {
             if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "SFM";
             if (els.fwd.kpiVc) els.fwd.kpiVc.textContent = Math.round(res.sfm).toString();
-            if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.vc_mmin)} m/min`;
+            if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.vc_mmin)} SMM`;
             
             if (els.fwd.kpiFzUnit) els.fwd.kpiFzUnit.textContent = "mil/rev";
             if (els.fwd.kpiFz) els.fwd.kpiFz.textContent = res.fz_mil.toFixed(2);
@@ -1209,13 +1209,13 @@ function calculateForward(silent = true, syncToReverse = false) {
             
             addRow("Calculated Tool Engagement", "", "", true);
             addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} microns/rev`);
-            addRow("Cutting Speed (Vc)", `${Math.round(res.sfm)} SFM`, `${Math.round(res.vc_mmin)} m/min`);
+            addRow("Cutting Speed (Vc)", `${Math.round(res.sfm)} SFM`, `${Math.round(res.vc_mmin)} SMM`);
             addRow("Drilling MRR", `${res.mrr_imp.toFixed(4)} in³/min`, `${res.mrr_met.toFixed(3)} cm³/min`);
         }
 
         // Sync cutting speed and chipload back to Recommend Panel (Left panel)
         if (syncToReverse) {
-            if (els.rev.vcUnit.value === 'm/min') {
+            if (els.rev.vcUnit.value === 'SMM' || els.rev.vcUnit.value === 'm/min') {
                 els.rev.vc.value = res.vc_mmin.toFixed(1);
             } else {
                 els.rev.vc.value = res.sfm.toFixed(1);

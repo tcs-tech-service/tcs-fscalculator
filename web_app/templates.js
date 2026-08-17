@@ -49,8 +49,8 @@ window.AppTemplates = {
 
             items.forEach(item => {
                 const isHighlight = isMetric
-                    ? (item.met.includes('m/min') || item.met.includes('krpm'))
-                    : (item.imp.includes('IPM') || item.imp.includes('krpm'));
+                    ? (item.met.includes('m/min') || item.met.includes('krpm') || item.met.includes('SMM'))
+                    : (item.imp.includes('IPM') || item.imp.includes('krpm') || item.imp.includes('SFM'));
                 const primaryVal = isMetric ? item.met : item.imp;
                 const secondaryVal = isMetric ? item.imp : item.met;
 
