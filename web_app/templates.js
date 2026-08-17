@@ -7,7 +7,7 @@ window.AppTemplates = {
     /**
      * Renders Mobile-Optimized Card-Based Summary Deck (No horizontal table squeezing)
      */
-    renderMobileSummary(data) {
+    renderMobileSummary(data, unitSystem = 'imperial') {
         const el = document.createElement('div');
         el.className = 'adaptive-mobile-cards';
         el.setAttribute('data-component', 'mobile-summary-cards');
@@ -20,6 +20,8 @@ window.AppTemplates = {
             `;
             return el;
         }
+
+        const isMetric = (unitSystem === 'metric' || (data.unitSystem === 'metric'));
 
         let currentSection = "Setup Parameters";
         let sections = {};
@@ -46,13 +48,18 @@ window.AppTemplates = {
             `;
 
             items.forEach(item => {
-                const isHighlight = item.imp.includes('IPM') || item.imp.includes('krpm');
+                const isHighlight = isMetric
+                    ? (item.met.includes('m/min') || item.met.includes('krpm'))
+                    : (item.imp.includes('IPM') || item.imp.includes('krpm'));
+                const primaryVal = isMetric ? item.met : item.imp;
+                const secondaryVal = isMetric ? item.imp : item.met;
+
                 html += `
                     <div class="adaptive-item-card ${isHighlight ? 'item-highlight' : ''}">
                         <div class="item-card-label">${item.param}</div>
                         <div class="item-card-values">
-                            <div class="val-primary">${item.imp}</div>
-                            <div class="val-secondary">${item.met}</div>
+                            <div class="val-primary">${primaryVal}</div>
+                            <div class="val-secondary">${secondaryVal}</div>
                         </div>
                     </div>
                 `;

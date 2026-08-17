@@ -38,7 +38,7 @@ function mountAdaptiveViews() {
     if (device === 'mobile' && window.AppTemplates) {
         if (summaryMount) {
             summaryMount.innerHTML = '';
-            summaryMount.appendChild(window.AppTemplates.renderMobileSummary(lastCalculationData));
+            summaryMount.appendChild(window.AppTemplates.renderMobileSummary(lastCalculationData, currentUnitSystem));
         }
         if (mobileDockMount && !mobileDockMount.hasChildNodes()) {
             mobileDockMount.appendChild(window.AppTemplates.renderMobileBottomDock({
@@ -474,10 +474,13 @@ const els = {
         cappingDesc: document.getElementById('capping-callout-desc'),
         cappingMetrics: document.getElementById('capping-metrics'),
         kpiKrpm: document.getElementById('kpi-rev-krpm'),
+        kpiKrpmUnit: document.getElementById('kpi-rev-krpm-unit'),
         kpiRpmSub: document.getElementById('kpi-rev-rpm-sub'),
         kpiFr: document.getElementById('kpi-rev-fr'),
+        kpiFrUnit: document.getElementById('kpi-rev-fr-unit'),
         kpiFrSub: document.getElementById('kpi-rev-fr-sub'),
         kpiMrr: document.getElementById('kpi-rev-mrr'),
+        kpiMrrUnit: document.getElementById('kpi-rev-mrr-unit'),
         kpiMrrSub: document.getElementById('kpi-rev-mrr-sub'),
         tableBody: document.querySelector('#table-rev tbody'),
         btnCalc: document.getElementById('btn-rev-calc'),
@@ -499,10 +502,13 @@ const els = {
         flutes: document.getElementById('fwd-flutes'),
         advBadge: document.getElementById('fwd-adv-badge'),
         kpiVc: document.getElementById('kpi-fwd-vc'),
+        kpiVcUnit: document.getElementById('kpi-fwd-vc-unit'),
         kpiVcSub: document.getElementById('kpi-fwd-vc-sub'),
         kpiFz: document.getElementById('kpi-fwd-fz'),
+        kpiFzUnit: document.getElementById('kpi-fwd-fz-unit'),
         kpiFzSub: document.getElementById('kpi-fwd-fz-sub'),
         kpiMrr: document.getElementById('kpi-fwd-mrr'),
+        kpiMrrUnit: document.getElementById('kpi-fwd-mrr-unit'),
         kpiMrrSub: document.getElementById('kpi-fwd-mrr-sub'),
         tableBody: document.querySelector('#table-fwd tbody'),
         btnCalc: document.getElementById('btn-fwd-calc'),
@@ -1001,14 +1007,29 @@ function calculateReverse(silent = true, syncToForward = true) {
         const res = MachiningMathEngine.calcReverse(base_dia_in, base_sfm, base_ipt, flutes, max_rpm, min_rpm);
 
         // Update KPI Cards
-        els.rev.kpiKrpm.textContent = res.krpm.toFixed(1);
-        els.rev.kpiRpmSub.textContent = `${Math.round(res.rpm).toLocaleString()} RPM${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`;
+        const isMetric = currentUnitSystem === 'metric';
+
+        if (els.rev.kpiKrpm) els.rev.kpiKrpm.textContent = res.krpm.toFixed(1);
+        if (els.rev.kpiKrpmUnit) els.rev.kpiKrpmUnit.textContent = "krpm";
+        if (els.rev.kpiRpmSub) els.rev.kpiRpmSub.textContent = `${Math.round(res.rpm).toLocaleString()} RPM${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`;
         
-        els.rev.kpiFr.textContent = res.ipm.toFixed(1);
-        els.rev.kpiFrSub.textContent = `${res.fr_mmin.toFixed(2)} m/min (${res.fr_mms.toFixed(1)} mm/s)`;
-        
-        els.rev.kpiMrr.textContent = res.mrr_imp.toFixed(4);
-        els.rev.kpiMrrSub.textContent = `${res.mrr_met.toFixed(3)} cm³/min`;
+        if (isMetric) {
+            if (els.rev.kpiFrUnit) els.rev.kpiFrUnit.textContent = "m/min";
+            if (els.rev.kpiFr) els.rev.kpiFr.textContent = res.fr_mmin.toFixed(2);
+            if (els.rev.kpiFrSub) els.rev.kpiFrSub.textContent = `${res.fr_mms.toFixed(1)} mm/s (${res.ipm.toFixed(1)} IPM)`;
+            
+            if (els.rev.kpiMrrUnit) els.rev.kpiMrrUnit.textContent = "cm³/min";
+            if (els.rev.kpiMrr) els.rev.kpiMrr.textContent = res.mrr_met.toFixed(3);
+            if (els.rev.kpiMrrSub) els.rev.kpiMrrSub.textContent = `${res.mrr_imp.toFixed(4)} in³/min`;
+        } else {
+            if (els.rev.kpiFrUnit) els.rev.kpiFrUnit.textContent = "IPM";
+            if (els.rev.kpiFr) els.rev.kpiFr.textContent = res.ipm.toFixed(1);
+            if (els.rev.kpiFrSub) els.rev.kpiFrSub.textContent = `${res.fr_mmin.toFixed(2)} m/min (${res.fr_mms.toFixed(1)} mm/s)`;
+            
+            if (els.rev.kpiMrrUnit) els.rev.kpiMrrUnit.textContent = "in³/min";
+            if (els.rev.kpiMrr) els.rev.kpiMrr.textContent = res.mrr_imp.toFixed(4);
+            if (els.rev.kpiMrrSub) els.rev.kpiMrrSub.textContent = `${res.mrr_met.toFixed(3)} cm³/min`;
+        }
 
         // Update Spindle Safeguard Status Pill & Callout
         const safeguardDot = document.getElementById('safeguard-dot');
@@ -1075,7 +1096,7 @@ function calculateReverse(silent = true, syncToForward = true) {
         };
 
         addRow("Tool Diameter (D)", `${res.dia_in.toFixed(4)} in`, `${res.dia_mm.toFixed(3)} mm`);
-        addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt_target.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} µm/rev`);
+        addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt_target.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} microns/rev`);
         addRow("Target Cutting Speed (Vc)", `${res.sfm_target.toFixed(0)} SFM`, `${res.vc_mmin.toFixed(1)} m/min`);
         if (res.capped) {
             const statusTag = res.cap_type === 'min' ? '[Boosted to Min]' : '[Throttled at Max]';
@@ -1084,7 +1105,7 @@ function calculateReverse(silent = true, syncToForward = true) {
         
         addRow("Calculated Machine Parameters", "", "", true);
         addRow("Linear Feed Rate (F)", `${res.ipm.toFixed(1)} IPM`, `${res.fr_mmin.toFixed(3)} m/min | ${res.fr_mms.toFixed(2)} mm/s`);
-        addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`, `${res.krpm.toFixed(1)} krpm`);
+        addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)${res.capped ? (res.cap_type === 'min' ? ' [MIN LIMIT]' : ' [MAX CAPPED]') : ''}`, `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`);
         addRow("Drilling MRR", `${res.mrr_imp.toFixed(4)} in³/min`, `${res.mrr_met.toFixed(3)} cm³/min`);
 
         // Mount / Update Adaptive Views (Approach 2, Variant 4A)
@@ -1138,14 +1159,33 @@ function calculateForward(silent = true, syncToReverse = false) {
         const res = MachiningMathEngine.calcForward(base_dia_in, rpm, base_ipm, flutes);
 
         // Update KPI Cards
-        els.fwd.kpiVc.textContent = Math.round(res.sfm).toString();
-        els.fwd.kpiVcSub.textContent = `${Math.round(res.vc_mmin)} m/min`;
-        
-        els.fwd.kpiFz.textContent = res.fz_mil.toFixed(2);
-        els.fwd.kpiFzSub.textContent = `${res.fz_um.toFixed(1)} µm/rev (${res.ipt.toFixed(5)} in)`;
-        
-        els.fwd.kpiMrr.textContent = res.mrr_imp.toFixed(4);
-        els.fwd.kpiMrrSub.textContent = `${res.mrr_met.toFixed(3)} cm³/min`;
+        const isMetric = currentUnitSystem === 'metric';
+
+        if (isMetric) {
+            if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "m/min";
+            if (els.fwd.kpiVc) els.fwd.kpiVc.textContent = Math.round(res.vc_mmin).toString();
+            if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.sfm)} SFM`;
+            
+            if (els.fwd.kpiFzUnit) els.fwd.kpiFzUnit.textContent = "microns/rev";
+            if (els.fwd.kpiFz) els.fwd.kpiFz.textContent = res.fz_um.toFixed(1);
+            if (els.fwd.kpiFzSub) els.fwd.kpiFzSub.textContent = `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt.toFixed(5)} in)`;
+            
+            if (els.fwd.kpiMrrUnit) els.fwd.kpiMrrUnit.textContent = "cm³/min";
+            if (els.fwd.kpiMrr) els.fwd.kpiMrr.textContent = res.mrr_met.toFixed(3);
+            if (els.fwd.kpiMrrSub) els.fwd.kpiMrrSub.textContent = `${res.mrr_imp.toFixed(4)} in³/min`;
+        } else {
+            if (els.fwd.kpiVcUnit) els.fwd.kpiVcUnit.textContent = "SFM";
+            if (els.fwd.kpiVc) els.fwd.kpiVc.textContent = Math.round(res.sfm).toString();
+            if (els.fwd.kpiVcSub) els.fwd.kpiVcSub.textContent = `${Math.round(res.vc_mmin)} m/min`;
+            
+            if (els.fwd.kpiFzUnit) els.fwd.kpiFzUnit.textContent = "mil/rev";
+            if (els.fwd.kpiFz) els.fwd.kpiFz.textContent = res.fz_mil.toFixed(2);
+            if (els.fwd.kpiFzSub) els.fwd.kpiFzSub.textContent = `${res.fz_um.toFixed(1)} µm/rev (${res.ipt.toFixed(5)} in)`;
+            
+            if (els.fwd.kpiMrrUnit) els.fwd.kpiMrrUnit.textContent = "in³/min";
+            if (els.fwd.kpiMrr) els.fwd.kpiMrr.textContent = res.mrr_imp.toFixed(4);
+            if (els.fwd.kpiMrrSub) els.fwd.kpiMrrSub.textContent = `${res.mrr_met.toFixed(3)} cm³/min`;
+        }
 
         // Populate Table if present
         const tbody = els.fwd.tableBody;
@@ -1165,10 +1205,10 @@ function calculateForward(silent = true, syncToReverse = false) {
 
             addRow("Tool Diameter (D)", `${res.dia_in.toFixed(4)} in`, `${res.dia_mm.toFixed(3)} mm`);
             addRow("Linear Feed Rate (F)", `${res.ipm.toFixed(1)} IPM`, `${res.fr_mmin.toFixed(3)} m/min | ${res.fr_mms.toFixed(2)} mm/s`);
-            addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`, `${res.krpm.toFixed(1)} krpm`);
+            addRow("Spindle Speed (N)", `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`, `${res.krpm.toFixed(1)} krpm (${Math.round(res.rpm).toLocaleString()} RPM)`);
             
             addRow("Calculated Tool Engagement", "", "", true);
-            addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} µm/rev`);
+            addRow("Chipload (fz / IPT)", `${res.fz_mil.toFixed(2)} mil/rev (${res.ipt.toFixed(5)} in)`, `${res.fz_um.toFixed(1)} microns/rev`);
             addRow("Cutting Speed (Vc)", `${Math.round(res.sfm)} SFM`, `${Math.round(res.vc_mmin)} m/min`);
             addRow("Drilling MRR", `${res.mrr_imp.toFixed(4)} in³/min`, `${res.mrr_met.toFixed(3)} cm³/min`);
         }
@@ -1371,38 +1411,75 @@ function copyTableToClipboard(panel = 'rev') {
     // 1. Header Section
     let curY = padding;
     
+    // Draw TCT Brand Logo if available in DOM
+    const logoImg = document.querySelector('.brand-logo') || document.querySelector('.mobile-bottom-logo') || document.querySelector('img[alt="TCT Logo"]');
+    let textX = padding;
+    
+    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+        const logoH = 48;
+        const logoW = Math.round((logoImg.naturalWidth / logoImg.naturalHeight) * logoH);
+        const logoY = curY + 6;
+        
+        if (isDark) {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(padding - 4, logoY - 4, logoW + 8, logoH + 8, 6);
+            } else {
+                ctx.rect(padding - 4, logoY - 4, logoW + 8, logoH + 8);
+            }
+            ctx.fill();
+        }
+        
+        ctx.drawImage(logoImg, padding, logoY, logoW, logoH);
+        textX = padding + logoW + 18;
+    }
+    
     // Brand Tag
     ctx.fillStyle = colors.brandPrimary;
     ctx.font = 'bold 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText("TCT PRECISION TOOLING", padding, curY + 12);
+    ctx.fillText("TCT PRECISION TOOLING", textX, curY + 14);
 
     // Timestamp (Right-aligned)
     ctx.fillStyle = colors.textMuted;
     ctx.font = '500 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'right';
     const nowStr = new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-    ctx.fillText(nowStr, width - padding, curY + 12);
+    ctx.fillText(nowStr, width - padding, curY + 14);
     ctx.textAlign = 'left';
 
     // Title
     ctx.fillStyle = colors.textPrimary;
     ctx.font = 'bold 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText("Feeds, Speeds & Machine Parameters Report", padding, curY + 38);
+    ctx.fillText("Feeds, Speeds & Machine Parameters Report", textX, curY + 38);
 
     // Subtitle
     ctx.fillStyle = colors.textSecondary;
     ctx.font = '13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     const diaInput = revDiaSearch ? revDiaSearch.value() : els.rev.dia.value;
-    ctx.fillText(`Target Tool: ${diaInput} | Precision CNC Calculation`, padding, curY + 58);
+    ctx.fillText(`Target Tool: ${diaInput} | Precision CNC Calculation`, textX, curY + 58);
 
     curY += headerHeight;
 
     // 2. Summary KPI Cards (3 columns)
     const kpiW = (width - (padding * 2) - 20) / 3;
+    const isMetric = currentUnitSystem === 'metric';
     const kpis = [
-        { label: "RECOMMENDED FEED RATE", val: `${els.rev.kpiFr.textContent} IPM`, sub: els.rev.kpiFrSub.textContent },
-        { label: "SPINDLE SPEED", val: `${els.rev.kpiKrpm.textContent} krpm`, sub: els.rev.kpiRpmSub.textContent },
-        { label: "DRILLING MRR", val: `${els.rev.kpiMrr.textContent} in³/min`, sub: els.rev.kpiMrrSub.textContent }
+        {
+            label: "RECOMMENDED FEED RATE",
+            val: isMetric ? `${els.rev.kpiFr.textContent} m/min` : `${els.rev.kpiFr.textContent} IPM`,
+            sub: els.rev.kpiFrSub.textContent
+        },
+        {
+            label: "SPINDLE SPEED",
+            val: `${els.rev.kpiKrpm.textContent} krpm`,
+            sub: els.rev.kpiRpmSub.textContent
+        },
+        {
+            label: "DRILLING MRR",
+            val: isMetric ? `${els.rev.kpiMrr.textContent} cm³/min` : `${els.rev.kpiMrr.textContent} in³/min`,
+            sub: els.rev.kpiMrrSub.textContent
+        }
     ];
 
     kpis.forEach((kpi, idx) => {
