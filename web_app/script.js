@@ -84,7 +84,7 @@ const MATERIAL_PRESETS = {
     "Custom": { name: "Custom / Manual Entry", sfm: 200.0, fz_mil: 0.50 }
 };
 
-let currentUnitSystem = localStorage.getItem('tct_unit_system') || 'imperial';
+let currentUnitSystem = 'imperial'; // Always default to imperial on fresh load
 let currentWorkflowMode = localStorage.getItem('tct_workflow_mode') || 'compare-clean';
 let undoCache = {
     rev: null,
@@ -525,6 +525,7 @@ const els = {
     btnImperial: document.getElementById('btn-unit-imperial'),
     btnMetric: document.getElementById('btn-unit-metric'),
     unitSliderCheckbox: document.getElementById('unit-slider-checkbox'),
+    unitSliderLabel: document.getElementById('unit-slider-label'),
     sliderOptImperial: document.getElementById('slider-opt-imperial') || document.getElementById('slider-opt-inches'),
     sliderOptMetric: document.getElementById('slider-opt-metric'),
     themeToggle: document.getElementById('theme-toggle'),
@@ -593,14 +594,15 @@ function init() {
         });
     }
 
-    // 3. Set Initial Defaults based on loaded unit preference
-    const isMetric = currentUnitSystem === 'metric';
-    const initialDia = isMetric ? "0.2489 (0.25mm / 0.0098in)" : "0.0098 (0.25mm)";
+    // 3. Set Initial Defaults (Always default to Imperial on load)
+    currentUnitSystem = 'imperial';
+    localStorage.setItem('tct_unit_system', 'imperial');
+    const initialDia = "0.0098 (0.25mm)";
     revDiaSearch.setValue(initialDia, false);
     if (fwdDiaSearch) fwdDiaSearch.setValue(initialDia, false);
 
-    // 4. Setup Global Unit System
-    applyGlobalUnitSystem(currentUnitSystem, false);
+    // 4. Setup Global Unit System to Imperial
+    applyGlobalUnitSystem('imperial', false);
 
     // 5. Setup Workflow Mode
     if (els.panelsWrapper && els.panelsWrapper.classList.contains('compare-mode')) {
@@ -710,22 +712,20 @@ function setupEventListeners() {
     if (els.tabVerify) els.tabVerify.addEventListener('click', () => setWorkflowMode('verify'));
 
     // Global Unit Switches (Slider & Buttons)
-    if (els.unitSliderCheckbox) {
+    if (els.unitSliderLabel) {
+        els.unitSliderLabel.addEventListener('click', (e) => {
+            if (e.target.id === 'slider-opt-imperial') {
+                applyGlobalUnitSystem('imperial', true);
+            } else if (e.target.id === 'slider-opt-metric') {
+                applyGlobalUnitSystem('metric', true);
+            } else {
+                applyGlobalUnitSystem(currentUnitSystem === 'imperial' ? 'metric' : 'imperial', true);
+            }
+        });
+    } else if (els.unitSliderCheckbox) {
         els.unitSliderCheckbox.addEventListener('change', () => {
             const system = els.unitSliderCheckbox.checked ? 'metric' : 'imperial';
             applyGlobalUnitSystem(system, true);
-        });
-    }
-    if (els.sliderOptImperial) {
-        els.sliderOptImperial.addEventListener('click', (e) => {
-            e.preventDefault();
-            applyGlobalUnitSystem('imperial', true);
-        });
-    }
-    if (els.sliderOptMetric) {
-        els.sliderOptMetric.addEventListener('click', (e) => {
-            e.preventDefault();
-            applyGlobalUnitSystem('metric', true);
         });
     }
     if (els.btnImperial) els.btnImperial.addEventListener('click', () => applyGlobalUnitSystem('imperial'));
