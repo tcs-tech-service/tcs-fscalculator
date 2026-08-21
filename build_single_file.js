@@ -20,6 +20,7 @@ if (fs.existsSync(logoPath)) {
     const logoBuf = fs.readFileSync(logoPath);
     logoBase64 = 'data:image/png;base64,' + logoBuf.toString('base64');
     html = html.split('src="20150804 TCT logo.png"').join(`src="${logoBase64}"`);
+    html = html.split('href="20150804 TCT logo.png"').join(`href="${logoBase64}"`);
 }
 
 // 2. Inline CSS (using replacer function to avoid $ pattern interpretation)
