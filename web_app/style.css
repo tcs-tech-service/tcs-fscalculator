@@ -454,15 +454,20 @@ body {
 }
 
 .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.25rem 0.5rem;
+    padding: 0.35rem 0.65rem;
     border-radius: var(--radius-full);
+    line-height: 1;
 }
 
 .live-chip {
     background-color: var(--state-success-bg);
     color: var(--state-success-text);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 /* ==========================================================================
@@ -1382,6 +1387,12 @@ body {
         justify-content: center;
         padding: 0.625rem 0.5rem;
         font-size: 0.8125rem;
+    }
+
+    .actions-dock .status-chip {
+        grid-column: span 2;
+        justify-self: center;
+        margin-top: 0.25rem;
     }
 
     .safeguard-status-pill {
